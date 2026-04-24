@@ -1,3 +1,5 @@
-wget
 ezdl
 scikit-learn
+onnx==1.14.0
+torch
+wget

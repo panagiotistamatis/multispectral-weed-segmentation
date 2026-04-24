@@ -21,7 +21,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data.distributed import DistributedSampler
 from super_gradients.training import utils as core_utils
 from super_gradients.training.datasets.mixup import CollateMixup
-from super_gradients.training.exceptions.dataset_exceptions import IllegalDatasetParameterException
+from super_gradients.common.exceptions.dataset_exceptions import IllegalDatasetParameterException
 from super_gradients.common.abstractions.abstract_logger import get_logger
 
 from ezdl.data import DatasetInterface
@@ -160,7 +160,7 @@ class WeedMapDatasetInterface(DatasetInterface):
             return means, stds
 
     def build_data_loaders(self, batch_size_factor=1, num_workers=8, train_batch_size=None, val_batch_size=None,
-                           test_batch_size=None, distributed_sampler: bool = False):
+                           test_batch_size=None, distributed_sampler: bool = False, **kwargs):
         """
 
         define train, val (and optionally test) loaders. The method deals separately with distributed training and standard
@@ -294,6 +294,7 @@ class WeedMapDatasetInterface(DatasetInterface):
 class WeedMapDataset(VisionDataset):
     CLASS_LABELS = {0: "background", 1: "crop", 2: 'weed'}
     classes = ['background', 'crop', 'weed']
+    id2label = {0: "background", 1: "crop", 2: "weed"}
 
     def __init__(self,
                  root: str,

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  lwvits:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lwvits-weedmapping:latest
+    container_name: lwvits_container
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    volumes:
+      - .:/workspace
+      - ./dataset:/workspace/dataset
+      - ./outputs:/workspace/outputs
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    shm_size: '8gb'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

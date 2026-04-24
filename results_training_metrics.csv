@@ -1,0 +1,1 @@
+epoch,loss,f1_overall,f1_crop,f1_weed,f1_background,gpu_memory_gb

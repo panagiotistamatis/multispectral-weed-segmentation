@@ -13,3 +13,25 @@ checkpoints
 
 !dataset/raw/.keep
 !dataset/processed/.keep
+
+# Claude Code worktrees
+.claude/worktrees/
+old_logs/worktrees/
+
+# Checkpoints (μεγάλα αρχεία)
+*.pth
+*.ckpt
+
+# Experiment outputs
+outputs/
+experiments/
+tmp/
+
+# Log/report files
+*.log
+*.pptx
+exp_log.csv
+test_results.csv
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
