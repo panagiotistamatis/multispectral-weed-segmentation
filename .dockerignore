@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+venv/
+lightvenv/
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Datasets (huge — bind-mount αντί να μπουν μέσα στο image)
+dataset/
+datasets/
+**/weedsgalore-dataset/
+
+# Experiment outputs / logs / checkpoints
+experiments/
+outputs/
+wandb/
+checkpoints/
+tmp/
+old_logs/
+*.pth
+*.ckpt
+*.log
+*.pptx
+exp_log.csv
+test_results.csv
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
+docker_build.log
+
+# Misc
+*.backup
+.stignore
+current_env.txt

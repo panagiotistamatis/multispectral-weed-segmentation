@@ -6,8 +6,9 @@
 # ============================================================
 
 # --- Core ML & Deep Learning ---
+# NOTE: super-gradients is installed separately with --no-deps στο Dockerfile
+# (pins onnxruntime==1.13.1 which conflicts με 1.23.2 — deps καλύπτονται εδώ)
 torchmetrics==0.8.0
-super-gradients==3.5.0
 torchdistill==1.1.4
 transformers==5.3.0
 einops==0.8.2
@@ -145,10 +146,8 @@ boto3==1.42.68
 botocore==1.42.68
 s3transfer==0.16.0
 jmespath==1.1.0
-pdfminer.six==20251230
-pdfplumber==0.11.9
-pypdf==6.10.1
-pypdfium2==5.7.0
+# PDF libs removed — not needed for training, reportlab needs libfreetype
+# pdfminer.six, pdfplumber, pypdf, pypdfium2
 pycryptodome==3.23.0
 pyOpenSSL==25.1.0
 cryptography==45.0.2

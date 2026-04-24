@@ -19,10 +19,15 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libglib2.0-0 \
     libgomp1 \
+    libfreetype6-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libgl1 \
+    libglx-mesa0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN pip install --upgrade pip setuptools wheel
+# Upgrade pip (setuptools pinned — v80+ removed pkg_resources which super-gradients needs)
+RUN pip install --upgrade pip wheel && pip install "setuptools<80"
 
 # Set working directory
 WORKDIR /workspace
@@ -34,13 +39,19 @@ RUN pip install --no-cache-dir \
     torchaudio==2.8.0 \
     --index-url https://download.pytorch.org/whl/cu126
 
-# === ΒΗΜΑ 2: ezdl από GitHub (specific commit — ίδιο με PyCharm env) ===
-RUN pip install --no-cache-dir \
-    "ezdl @ git+https://github.com/pasqualedem/ezdl.git@ffdd832349ca507600cc0bb5cece9d0bc1c83191"
-
-# === ΒΗΜΑ 3: Όλα τα υπόλοιπα packages (pinned versions) ===
+# === ΒΗΜΑ 2: Όλα τα packages (pinned versions για Python 3.12) ===
+# Εγκαθιστούμε PΡΩΤΑ τα requirements ώστε να έχουμε modern εκδόσεις,
+# και ΜΕΤΑ το ezdl με --no-deps (το setup.py του έχει παλιά 2023 pins
+# που δεν χτίζουν σε Python 3.12 — τα dependencies καλύπτονται εδώ)
 COPY requirements-frozen.txt .
 RUN pip install --no-cache-dir -r requirements-frozen.txt
+
+# === ΒΗΜΑ 3: super-gradients με --no-deps (pins onnxruntime==1.13.1) ===
+RUN pip install --no-cache-dir --no-deps super-gradients==3.5.0
+
+# === ΒΗΜΑ 4: ezdl από δικό μας fork (--no-deps για αποφυγή stale pins) ===
+RUN pip install --no-cache-dir --no-deps \
+    "ezdl @ git+https://github.com/panagiotis890/ezdl.git@weedsgalore-losses"
 
 # Copy project files
 COPY . .
