@@ -12,6 +12,7 @@ torchmetrics==0.8.0
 torchdistill==1.1.4
 transformers==5.3.0
 einops==0.8.2
+pip-tools==7.5.3
 
 # --- ONNX ---
 onnx==1.20.1
