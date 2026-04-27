@@ -41,7 +41,9 @@ parameters:
     greater_metric_to_watch_is_better: [False]
     metric_to_watch: [loss]
     freeze_pretrained: [False]
-    mixed_precision: [True]
+    # mixed_precision: False για 1080 Ti (Pascal, no Tensor Cores → FP16 χωρίς benefit
+    # και πιθανή numerical instability). Με 11GB VRAM έχουμε χώρο για FP32 + larger batch.
+    mixed_precision: [False]
 
   early_stopping:
     patience: [30]
@@ -82,9 +84,10 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'B', 'NIR', 'RE']]
-    batch_size: [2]
-    val_batch_size: [1]
-    test_batch_size: [1]
+    # 1080 Ti 11GB → ξεκινάμε batch_size=4. Αν χωράει στο smoke-orion, σκαλώνουμε σε 6.
+    batch_size: [4]
+    val_batch_size: [2]
+    test_batch_size: [2]
     num_workers: [0]
     num_classes: [3]
     return_path: [True]
