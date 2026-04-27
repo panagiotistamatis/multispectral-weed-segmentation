@@ -1,6 +1,13 @@
 import argparse
 import json
 
+# NumPy 2.0 compat shim για super-gradients (χρησιμοποιεί np.Inf/np.NaN που αφαιρέθηκαν)
+import numpy as _np
+if not hasattr(_np, "Inf"):
+    _np.Inf = _np.inf
+if not hasattr(_np, "NaN"):
+    _np.NaN = _np.nan
+
 from ezdl.utils.utilities import update_collection, load_yaml
 
 parser = argparse.ArgumentParser(description='Train and test models')
