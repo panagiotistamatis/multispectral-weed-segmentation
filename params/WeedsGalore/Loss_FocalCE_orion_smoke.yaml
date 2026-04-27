@@ -1,13 +1,11 @@
 
-# Stage 3a: Focal + CrossEntropy combined loss.
-# SplitLawin MiT-B0 | R,G,B,NIR,RE | main=RGB + side=NIR,RE | SE | NoTile 608
-# loss = alpha * Focal(gamma=2) + (1-alpha) * CE   (alpha=0.5)
-# Same class weights [bg, crop, weed] on both terms (imbalance is dataset property).
+# Smoke test (1 epoch) για Focal+CE στον orion (1080 Ti, 11GB, batch=4).
+# Επιβεβαιώνει pipeline + δείχνει VRAM/χρόνο πριν τρέξουμε 500 epochs.
 
 
 experiment:
   name: weedmapping-weedsgalore
-  group: LossVariants-WeedsGalore
+  group: LossVariants-SMOKE-Orion
   continue_with_errors: true
   start_from_grid: 0
   start_from_run: 0
@@ -17,12 +15,12 @@ experiment:
   excluded_files: "*.pth"
 
 parameters:
-  tags: [[loss_variant, focal_ce, no_tile, weedsgalore, splitlawin_b0]]
+  tags: [[smoke, orion, focal_ce, no_tile, weedsgalore, splitlawin_b0]]
   phases: [[train, test]]
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
 
   train_params:
-    max_epochs: [500]
+    max_epochs: [1]
     initial_lr: [0.0001]
     optimizer: [Adam]
     optimizer_params:
@@ -42,29 +40,17 @@ parameters:
     mixed_precision: [True]
 
   early_stopping:
-    patience: [30]
+    patience: [5]
     monitor: [loss]
     mode: [min]
 
   train_metrics:
     f1: &metric_params
       num_classes: &num_classes [3]
-    iou: *metric_params       # per-class iou_0/1/2 + macro iou (=mIoU)
+    iou: *metric_params
   test_metrics:
-    iou: *metric_params       # per-class iou_0/1/2 + macro iou (=mIoU)
-    jaccard: *metric_params   # raw torchmetrics, ίδιο macro mIoU (κρατημένο για backward compat)
-    conf_mat: *metric_params
-    auc: *metric_params
+    iou: *metric_params
     f1: *metric_params
-    precision: *metric_params
-    recall: *metric_params
-    perclassauc:
-      discriminator:
-        [[
-          ['auc_background', 0],
-          ['auc_crop', 1],
-          ['auc_weed', 2]
-        ]]
 
   model:
     name: [wd/models/splitlawin]
@@ -82,7 +68,6 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'B', 'NIR', 'RE']]
-    # 1080 Ti 11GB + mixed_precision=True → batch=4 χωράει άνετα
     batch_size: [4]
     val_batch_size: [2]
     test_batch_size: [2]
@@ -95,6 +80,5 @@ parameters:
   test_callbacks:
     PerExampleMetricCallback:
       phase: [TEST_BATCH_END]
-    SegmentationVisualizationCallback:
 
 other_grids: []
