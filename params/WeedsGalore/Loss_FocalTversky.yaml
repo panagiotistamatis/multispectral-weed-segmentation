@@ -41,9 +41,10 @@ parameters:
     greater_metric_to_watch_is_better: [False]
     metric_to_watch: [loss]
     freeze_pretrained: [False]
-    # mixed_precision: False για 1080 Ti (Pascal, no Tensor Cores → FP16 χωρίς benefit
-    # και πιθανή numerical instability). Με 11GB VRAM έχουμε χώρο για FP32 + larger batch.
-    mixed_precision: [False]
+    # mixed_precision: True για VRAM savings (~30%) σε 1080 Ti.
+    # Pascal δεν έχει Tensor Cores οπότε δεν περιμένουμε speedup, αλλά το FP16
+    # κατεβάζει peak VRAM από 10.9GB σε ~7.5GB — απαραίτητο για ασφαλές 5ωρο run.
+    mixed_precision: [True]
 
   early_stopping:
     patience: [30]
@@ -79,7 +80,7 @@ parameters:
       fusion_type: ['squeeze_excite']
 
   dataset:
-    root: ["<REDACTED_LOCAL_PATH>"]
+    root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
     tile: [False]
     hor_flip: [True]
     ver_flip: [True]
