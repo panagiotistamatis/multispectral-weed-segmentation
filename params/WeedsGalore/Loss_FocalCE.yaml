@@ -49,8 +49,10 @@ parameters:
   train_metrics:
     f1: &metric_params
       num_classes: &num_classes [3]
+    iou: *metric_params       # per-class iou_0/1/2 + macro iou (=mIoU)
   test_metrics:
-    jaccard: *metric_params
+    iou: *metric_params       # per-class iou_0/1/2 + macro iou (=mIoU)
+    jaccard: *metric_params   # raw torchmetrics, ίδιο macro mIoU (κρατημένο για backward compat)
     conf_mat: *metric_params
     auc: *metric_params
     f1: *metric_params
