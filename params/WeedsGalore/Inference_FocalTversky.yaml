@@ -7,7 +7,7 @@
 experiment:
   name: weedmapping-weedsgalore
   group: Inference-FocalTversky
-  continue_with_errors: true
+  continue_with_errors: false  # Θέλουμε full traceback για debugging
   start_from_grid: 0
   start_from_run: 0
   tracking_dir: null
