@@ -37,19 +37,20 @@ if not hasattr(np, "NaN"):
 def load_model(ckpt_path: str, device: str = "cuda"):
     """Φορτώνει το SplitLawin model + ckpt weights."""
     from wd.models import SplitLawin
-    from super_gradients.training.utils import HpmStruct
+    from easydict import EasyDict
 
-    arch_params = HpmStruct(
-        backbone="MiT-B0",
-        backbone_pretrained=False,  # δεν χρειάζεται — φορτώνουμε δικά μας weights
-        main_channels=3,
-        main_pretrained=['R', 'G', 'B'],
-        side_pretrained='G',
-        fusion_type='squeeze_excite',
-        num_classes=3,
-        input_channels=5,
-        side_channels=2,
-    )
+    # Το SplitLawin χρησιμοποιεί ΚΑΙ get_param() ΚΑΙ arch_params['x'] subscript,
+    # οπότε χρειάζεται dict-like (EasyDict δουλεύει και με τα δύο).
+    arch_params = EasyDict({
+        "backbone": "MiT-B0",
+        "backbone_pretrained": False,
+        "main_channels": 3,
+        "main_pretrained": ['R', 'G', 'B'],
+        "side_pretrained": 'G',
+        "fusion_type": 'squeeze_excite',
+        "num_classes": 3,
+        "input_channels": 5,
+    })
     model = SplitLawin(arch_params)
 
     print(f"Loading checkpoint: {ckpt_path}")
