@@ -20,6 +20,9 @@ import argparse
 import sys
 from pathlib import Path
 
+# Repo root στο PYTHONPATH ώστε να βλέπει το `wd/` package
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import numpy as np
 import torch
 import torch.nn.functional as F
