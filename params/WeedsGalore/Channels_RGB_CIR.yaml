@@ -1,7 +1,8 @@
 
 # Channel ablation: RGB_CIR
-# main=RGB pretrained, side=CIR composite (NIR,G,R) ме G-pretrained
+# main=RGB pretrained, side=CIR composite (NIR,G,R) with G-pretrained
 # SplitLawin MiT-B0 | Focal Tversky | NoTile 608 | mixed_precision (1080 Ti)
+# NOTE: ASCII-only YAML (ezdl loader needs UTF-8, Windows defaults to cp1253)
 
 
 experiment:

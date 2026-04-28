@@ -1,6 +1,6 @@
 
-# Smoke test (1 epoch) για channel ablation: CIR_NDVI
-# main=CIR composite (NIR,G,R) με B-G-R pretrained slots, side=NDVI
+# Smoke test (1 epoch) Ξ³ΞΉΞ± channel ablation: CIR_NDVI
+# main=CIR composite (NIR,G,R) with B-G-R pretrained slots, side=NDVI
 
 
 experiment:

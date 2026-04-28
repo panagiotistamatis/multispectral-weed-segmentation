@@ -1,6 +1,6 @@
 
-# Smoke test (1 epoch) για channel ablation: RGB_CIR
-# main=RGB pretrained, side=CIR composite (NIR,G,R) με G-pretrained
+# Smoke test (1 epoch) Ξ³ΞΉΞ± channel ablation: RGB_CIR
+# main=RGB pretrained, side=CIR composite (NIR,G,R) with G-pretrained
 
 
 experiment:

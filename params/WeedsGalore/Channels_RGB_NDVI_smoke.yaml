@@ -1,5 +1,5 @@
 
-# Smoke test (1 epoch) για channel ablation: RGB_NDVI
+# Smoke test (1 epoch) Ξ³ΞΉΞ± channel ablation: RGB_NDVI
 # main=RGB pretrained, side=NDVI (1ch G-pretrained)
 
 

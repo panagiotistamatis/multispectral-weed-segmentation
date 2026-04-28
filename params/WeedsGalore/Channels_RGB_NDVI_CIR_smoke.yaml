@@ -1,6 +1,6 @@
 
-# Smoke test (1 epoch) για channel ablation: RGB_NDVI_CIR
-# main=RGB, side=NDVI+CIR (4ch) all G-pretrained — μέγιστη φασματική πληροφορία
+# Smoke test (1 epoch) Ξ³ΞΉΞ± channel ablation: RGB_NDVI_CIR
+# main=RGB, side=NDVI+CIR (4ch) all G-pretrained - max spectral info
 
 
 experiment:

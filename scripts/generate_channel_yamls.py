@@ -23,22 +23,22 @@ COMBOS = [
     ("RGB_CIR",
      ['R', 'G', 'B', 'NIR', 'G', 'R'], 3,
      ['R', 'G', 'B'], 'G',
-     "main=RGB pretrained, side=CIR composite (NIR,G,R) με G-pretrained"),
+     "main=RGB pretrained, side=CIR composite (NIR,G,R) with G-pretrained"),
 
     ("RGB_NDVI_CIR",
      ['R', 'G', 'B', 'NDVI', 'NIR', 'G', 'R'], 3,
      ['R', 'G', 'B'], 'G',
-     "main=RGB, side=NDVI+CIR (4ch) all G-pretrained — μέγιστη φασματική πληροφορία"),
+     "main=RGB, side=NDVI+CIR (4ch) all G-pretrained - max spectral info"),
 
     ("RGB_NDVI_CIR_RE",
      ['R', 'G', 'B', 'NDVI', 'NIR', 'G', 'R', 'RE'], 3,
      ['R', 'G', 'B'], 'G',
-     "main=RGB, side=NDVI+CIR+RE (5ch) all G-pretrained — full spectral"),
+     "main=RGB, side=NDVI+CIR+RE (5ch) all G-pretrained - full spectral"),
 
     ("CIR_NDVI",
      ['NIR', 'G', 'R', 'NDVI'], 3,
      ['B', 'G', 'R'], 'G',
-     "main=CIR composite (NIR,G,R) με B-G-R pretrained slots, side=NDVI"),
+     "main=CIR composite (NIR,G,R) with B-G-R pretrained slots, side=NDVI"),
 ]
 
 
@@ -46,6 +46,7 @@ FULL_TEMPLATE = """
 # Channel ablation: {name}
 # {comment}
 # SplitLawin MiT-B0 | Focal Tversky | NoTile 608 | mixed_precision (1080 Ti)
+# NOTE: ASCII-only YAML (ezdl loader needs UTF-8, Windows defaults to cp1253)
 
 
 experiment:
@@ -243,8 +244,8 @@ def main():
         }
         full_path = OUT / f"Channels_{name}.yaml"
         smoke_path = OUT / f"Channels_{name}_smoke.yaml"
-        full_path.write_text(FULL_TEMPLATE.format(**ctx))
-        smoke_path.write_text(SMOKE_TEMPLATE.format(**ctx))
+        full_path.write_text(FULL_TEMPLATE.format(**ctx), encoding="utf-8")
+        smoke_path.write_text(SMOKE_TEMPLATE.format(**ctx), encoding="utf-8")
         print(f"  Wrote: {full_path}")
         print(f"  Wrote: {smoke_path}")
 
