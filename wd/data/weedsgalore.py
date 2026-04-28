@@ -83,12 +83,13 @@ class WeedsGaloreDatasetInterface(DatasetInterface):
         self.tile = tile
 
         # Resolve how many actual tensor channels we have
+        # NOTE: 'CIR' counts as 3 channels (NIR, G, R composite) ακόμα και μέσα σε list
         if channels == 'CIR':
             n_channels = 3
         elif isinstance(channels, str):
             n_channels = 1
         else:
-            n_channels = len(channels)
+            n_channels = sum(3 if c == 'CIR' else 1 for c in channels)
         spatial = TILE_SIZE if tile else FULL_IMAGE_SIZE
         self.size = (n_channels, spatial, spatial)
 
@@ -229,6 +230,15 @@ class WeedsGaloreDatasetInterface(DatasetInterface):
         channels = dataset_params['channels']
         if channels == 'CIR':
             channels = ['NIR', 'G', 'R']
+        elif isinstance(channels, (list, tuple)):
+            # Expand 'CIR' tokens μέσα σε list (συμβατό με _get_image)
+            expanded = []
+            for c in channels:
+                if c == 'CIR':
+                    expanded.extend(['NIR', 'G', 'R'])
+                else:
+                    expanded.append(c)
+            channels = expanded
 
         # Aggregate across all dates in the stats dict
         dates = list(STATS.keys())
@@ -353,12 +363,20 @@ class WeedsGaloreDataset(VisionDataset):
             self._load_channels = ['NIR', 'G', 'R']
             self._compute_ndvi = False
         elif isinstance(channels, list) or isinstance(channels, tuple):
-            # Separate raw bands from derived ones
-            self._raw_bands = [c for c in channels if c in RAW_BANDS]
-            self._compute_ndvi = 'NDVI' in channels
-            self._compute_cir = False  # CIR is handled as channels=='CIR'
-            self._channel_order = channels  # preserve user order
-            self._load_channels = None  # handled in get_channels
+            # Expand 'CIR' tokens μέσα σε list → [NIR, G, R] composite.
+            # Π.χ. ['R','G','B','CIR'] → ['R','G','B','NIR','G','R'] (6 ch)
+            expanded = []
+            for c in channels:
+                if c == 'CIR':
+                    expanded.extend(['NIR', 'G', 'R'])
+                else:
+                    expanded.append(c)
+            # Separate raw bands from derived ones (deduped via _get_image)
+            self._raw_bands = [c for c in expanded if c in RAW_BANDS]
+            self._compute_ndvi = 'NDVI' in expanded
+            self._compute_cir = False
+            self._channel_order = expanded  # use expanded list για stacking
+            self._load_channels = None
         else:
             raise ValueError(f"Unsupported channels spec: {channels}")
 
