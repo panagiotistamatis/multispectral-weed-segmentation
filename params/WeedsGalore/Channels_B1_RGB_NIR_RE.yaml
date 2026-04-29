@@ -81,11 +81,11 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'B', 'NIR', 'RE']]
-    # B1 smoke έδειξε VRAM=6.4GB σε batch=2 → χωράει άνετα batch=4 (~10GB peak).
-    # ~2x speedup: 8.6h → 4-5h overall για 500 epochs.
-    batch_size: [4]
-    val_batch_size: [2]
-    test_batch_size: [2]
+    # B1 batch=4 κατέρρευσε με "GPU is lost" στα 10.7GB (πολύ τεντωμένο).
+    # Επιστρέφουμε σε batch=2 (smoke = 6.4GB safe). ~8-9h overall.
+    batch_size: [2]
+    val_batch_size: [1]
+    test_batch_size: [1]
     num_workers: [0]
     num_classes: [3]
     return_path: [True]
