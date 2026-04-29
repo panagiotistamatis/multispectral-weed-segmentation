@@ -37,7 +37,8 @@ parameters:
     greater_metric_to_watch_is_better: [False]
     metric_to_watch: [loss]
     freeze_pretrained: [False]
-    mixed_precision: [True]
+    # FP32 για B1 σε 1080 Ti — AMP scaler είχε προκαλέσει GPU is lost crashes
+    mixed_precision: [False]
 
   early_stopping:
     patience: [5]
