@@ -81,11 +81,11 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'B', 'NIR', 'RE']]
-    # B1 ~14M params (vs B0 5.4M) — ξεκινάμε με batch=2 για ασφάλεια στα 11GB.
-    # Αν smoke δείξει VRAM <8GB, ανέβασε σε batch=4 για ταχύτητα.
-    batch_size: [2]
-    val_batch_size: [1]
-    test_batch_size: [1]
+    # B1 smoke έδειξε VRAM=6.4GB σε batch=2 → χωράει άνετα batch=4 (~10GB peak).
+    # ~2x speedup: 8.6h → 4-5h overall για 500 epochs.
+    batch_size: [4]
+    val_batch_size: [2]
+    test_batch_size: [2]
     num_workers: [0]
     num_classes: [3]
     return_path: [True]
