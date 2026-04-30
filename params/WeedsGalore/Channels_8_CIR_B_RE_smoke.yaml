@@ -58,7 +58,7 @@ parameters:
       backbone_pretrained: [True]
       main_channels: [3]
       main_pretrained: [['G', 'G', 'R']]
-      side_pretrained: ['G']
+      side_pretrained: [['B', 'G']]
       fusion_type: ['squeeze_excite']
 
   dataset:

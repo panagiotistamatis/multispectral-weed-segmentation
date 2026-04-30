@@ -75,8 +75,8 @@ parameters:
       main_channels: [3]
       # main = CIR composite [NIR,G,R] → pretrained mapping [G,G,R] (paper-style)
       main_pretrained: [['G', 'G', 'R']]
-      # side = [B, RE] → 'G' broadcast σε 2 channels
-      side_pretrained: ['G']
+      # side = [B, RE] → B χρησιμοποιεί Blue pretrained, RE χρησιμοποιεί G (όπως Combo 1)
+      side_pretrained: [['B', 'G']]
       fusion_type: ['squeeze_excite']
 
   dataset:
