@@ -1,6 +1,7 @@
 
-# Phase Α (Senior plan): Best Combo + Combined Loss FT+Lovász (50/50).
-# Train-from-scratch με 0.5*FocalTversky(α=0.4,β=0.6) + 0.5*LovászSoftmax.
+# Phase Α (Senior plan): Best Combo + Combined Loss FT+Lovász (70/30).
+# Train-from-scratch με 0.7*FocalTversky(α=0.4,β=0.6) + 0.3*LovászSoftmax.
+# FT-dominant — conservative introduction of Lovász ως IoU refiner.
 #
 # Reference (Best Combo, FT only): F1=0.9104, mIoU=0.8408
 # Goal: μέτρηση αν Lovász component βελτιώνει direct IoU optimization.
@@ -18,7 +19,7 @@ experiment:
   excluded_files: "*.pth"
 
 parameters:
-  tags: [[best_combo_lovasz, ft_lov_50_50, focal_tversky_lovasz, splitlawin_b0]]
+  tags: [[best_combo_lovasz, ft_lov_70_30, focal_tversky_lovasz, splitlawin_b0]]
   phases: [[train, test]]
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
 
@@ -35,9 +36,9 @@ parameters:
         alpha: [0.4]
         beta: [0.6]
         gamma: [1.3333]
-        # Combined weights — 50/50 static blend
-        ft_weight: [0.5]
-        lov_weight: [0.5]
+        # Combined weights — 70/30 static blend (FT-dominant, conservative Lovász intro)
+        ft_weight: [0.7]
+        lov_weight: [0.3]
         lovasz_classes: ['present']
     seed: [42]
     zero_weight_decay_on_bias_and_bn: [True]

@@ -14,7 +14,7 @@ experiment:
   excluded_files: "*.pth"
 
 parameters:
-  tags: [[smoke, best_combo_lovasz, ft_lov_50_50]]
+  tags: [[smoke, best_combo_lovasz, ft_lov_70_30]]
   phases: [[train, test]]
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
 
@@ -30,8 +30,8 @@ parameters:
         alpha: [0.4]
         beta: [0.6]
         gamma: [1.3333]
-        ft_weight: [0.5]
-        lov_weight: [0.5]
+        ft_weight: [0.7]
+        lov_weight: [0.3]
         lovasz_classes: ['present']
     seed: [42]
     zero_weight_decay_on_bias_and_bn: [True]
