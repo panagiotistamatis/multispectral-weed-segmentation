@@ -1,7 +1,7 @@
 
-# Phase Α v2: Best Combo + Combined Loss FT+Lovász (50/50).
-# Train-from-scratch με 0.5*FocalTversky(α=0.4,β=0.6) + 0.5*LovászSoftmax.
-# Standard literature ratio. Δεύτερη iteration μετά το 70/30 (test mIoU=0.8386).
+# Phase Α v3: Best Combo + Combined Loss FT+Lovász (40/60 — Lovász dominant).
+# Train-from-scratch με 0.4*FocalTversky(α=0.4,β=0.6) + 0.6*LovászSoftmax.
+# Sequence: 70/30 → 0.8386, 50/50 → 0.84302 ↑↑, ψάχνουμε αν τάση συνεχίζει.
 #
 # Reference (Best Combo, FT only): F1=0.9104, mIoU=0.8408
 # Goal: μέτρηση αν Lovász component βελτιώνει direct IoU optimization.
@@ -9,7 +9,7 @@
 
 experiment:
   name: weedmapping-weedsgalore
-  group: BestCombo-Lovasz-50-50
+  group: BestCombo-Lovasz-40-60
   continue_with_errors: false  # full traceback αν crash
   start_from_grid: 0
   start_from_run: 0
@@ -19,7 +19,7 @@ experiment:
   excluded_files: "*.pth"
 
 parameters:
-  tags: [[best_combo_lovasz, ft_lov_50_50, focal_tversky_lovasz, splitlawin_b0]]
+  tags: [[best_combo_lovasz, ft_lov_40_60, focal_tversky_lovasz, splitlawin_b0]]
   phases: [[train, test]]
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
 
@@ -36,9 +36,9 @@ parameters:
         alpha: [0.4]
         beta: [0.6]
         gamma: [1.3333]
-        # Combined weights — 50/50 standard balance
-        ft_weight: [0.5]
-        lov_weight: [0.5]
+        # Combined weights — 40/60 (Lovász dominant — extrapolation από τάση 30%→50% Lovász)
+        ft_weight: [0.4]
+        lov_weight: [0.6]
         lovasz_classes: ['present']
     seed: [42]
     zero_weight_decay_on_bias_and_bn: [True]
