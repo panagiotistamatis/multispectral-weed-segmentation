@@ -240,15 +240,23 @@ class WeedsGaloreDatasetInterface(DatasetInterface):
                     expanded.append(c)
             channels = expanded
 
+        # OSAVI and MSAVI don't have pre-computed stats. Use NDVI stats as approximation
+        # (similar formula structure & dynamic range ~[-1, 1] for vegetation imagery).
+        def stats_lookup(date_dict, name):
+            if name in ('OSAVI', 'MSAVI'):
+                return date_dict['NDVI']
+            return date_dict[name]
+
         # Aggregate across all dates in the stats dict
         dates = list(STATS.keys())
         if len(dates) == 1:
             d = dates[0]
-            return list(zip(*[(STATS[d][c]['mean'], STATS[d][c]['std']) for c in channels]))
+            return list(zip(*[(stats_lookup(STATS[d], c)['mean'],
+                               stats_lookup(STATS[d], c)['std']) for c in channels]))
 
         sums = {
-            **{c + '_sum': sum(STATS[d][c]['sum'] for d in dates) for c in channels},
-            **{c + '_sum_sq': sum(STATS[d][c]['sum_sq'] for d in dates) for c in channels},
+            **{c + '_sum': sum(stats_lookup(STATS[d], c)['sum'] for d in dates) for c in channels},
+            **{c + '_sum_sq': sum(stats_lookup(STATS[d], c)['sum_sq'] for d in dates) for c in channels},
         }
         count = sum(STATS[d]['count'] for d in dates)
         means = [sums[c + '_sum'] / count for c in channels]
@@ -374,6 +382,8 @@ class WeedsGaloreDataset(VisionDataset):
             # Separate raw bands from derived ones (deduped via _get_image)
             self._raw_bands = [c for c in expanded if c in RAW_BANDS]
             self._compute_ndvi = 'NDVI' in expanded
+            self._compute_osavi = 'OSAVI' in expanded
+            self._compute_msavi = 'MSAVI' in expanded
             self._compute_cir = False
             self._channel_order = expanded  # use expanded list για stacking
             self._load_channels = None
@@ -448,18 +458,34 @@ class WeedsGaloreDataset(VisionDataset):
         band_data = {}
         # Load only the raw bands we need
         needed_raw = set(self._raw_bands)
-        if self._compute_ndvi:
+        if self._compute_ndvi or self._compute_osavi or self._compute_msavi:
             needed_raw.add('NIR')
             needed_raw.add('R')
 
         for b in needed_raw:
             band_data[b] = self._load_band(scene_id, b)
 
-        # Compute NDVI if requested
+        # Compute NDVI if requested: (NIR - R) / (NIR + R)
         if self._compute_ndvi:
             nir = band_data['NIR']
             red = band_data['R']
             band_data['NDVI'] = (nir - red) / (nir + red + 1e-10)
+
+        # Compute OSAVI: (NIR - R) / (NIR + R + 0.16) — soil-adjusted, reduces soil bias
+        if self._compute_osavi:
+            nir = band_data['NIR']
+            red = band_data['R']
+            band_data['OSAVI'] = (nir - red) / (nir + red + 0.16)
+
+        # Compute MSAVI: 0.5 · (2·NIR + 1 - √((2·NIR + 1)² - 8·(NIR - R)))
+        # Self-calibrating SAVI, καλύτερο σε bare soil scenarios.
+        if self._compute_msavi:
+            nir = band_data['NIR']
+            red = band_data['R']
+            inner = (2.0 * nir + 1.0) ** 2 - 8.0 * (nir - red)
+            # Clamp για numerical stability (rare edge case όπου το inner γίνεται <0)
+            inner = torch.clamp(inner, min=0.0)
+            band_data['MSAVI'] = 0.5 * (2.0 * nir + 1.0 - torch.sqrt(inner))
 
         # Stack in user-specified order
         stacked = torch.stack([band_data[c] for c in self._channel_order], dim=0)
