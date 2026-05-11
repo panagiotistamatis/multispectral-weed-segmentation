@@ -204,7 +204,8 @@ def build_test_loader(params: dict, dataset_root_override: str = None, batch_siz
     ds_params["test_batch_size"] = batch_size
 
     interface = WeedsGaloreDatasetInterface(EasyDict(ds_params))
-    interface.build_data_loaders(batch_size_factor=1)
+    # Force num_workers=0 to avoid Docker shared-memory issues with worker processes
+    interface.build_data_loaders(batch_size_factor=1, num_workers=0)
     return interface.test_loader
 
 
