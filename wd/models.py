@@ -31,7 +31,12 @@ class BaseLawin(BaseModel):
                 self.main_pretrained = [pretrained_channels] * input_channels
             else:
                 self.main_pretrained = pretrained_channels
-            self.backbone.init_pretrained_weights(channels_to_load=self.main_pretrained)
+            # Optional per-channel scaling (I3D-style: NIR/RE ← 0.6·RGB pretrained)
+            main_scales = get_param(arch_params, "main_pretrained_scales", None)
+            self.backbone.init_pretrained_weights(
+                channels_to_load=self.main_pretrained,
+                channel_scales=main_scales,
+            )
 
     def forward(self, x: Tensor) -> Tensor:
         y = self.backbone(x)
@@ -80,7 +85,12 @@ class BaseDoubleLawin(BaseLawin):
         if self.side_pretrained is not None:
             if isinstance(self.side_pretrained, str):
                 self.side_pretrained = [self.side_pretrained] * self.side_channels
-            self.side_backbone.init_pretrained_weights(channels_to_load=self.side_pretrained)
+            # Optional I3D-style per-channel scaling για side branch
+            _side_scales = get_param(arch_params, "side_pretrained_scales", None)
+            self.side_backbone.init_pretrained_weights(
+                channels_to_load=self.side_pretrained,
+                channel_scales=_side_scales,
+            )
         p_local = get_param(arch_params, "p_local", None)
         p_glob = get_param(arch_params, "p_glob", None)
         fusion_type = get_param(arch_params, "fusion_type", None)
@@ -125,7 +135,12 @@ class BaseSplitLawin(BaseLawin):
         if self.side_pretrained is not None:
             if isinstance(self.side_pretrained, str):
                 self.side_pretrained = [self.side_pretrained] * self.side_channels
-            self.side_backbone.init_pretrained_weights(channels_to_load=self.side_pretrained)
+            # Optional I3D-style per-channel scaling για side branch
+            _side_scales = get_param(arch_params, "side_pretrained_scales", None)
+            self.side_backbone.init_pretrained_weights(
+                channels_to_load=self.side_pretrained,
+                channel_scales=_side_scales,
+            )
         p_local = get_param(arch_params, "p_local", None)
         p_glob = get_param(arch_params, "p_glob", None)
         fusion_type = get_param(arch_params, "fusion_type", None)
