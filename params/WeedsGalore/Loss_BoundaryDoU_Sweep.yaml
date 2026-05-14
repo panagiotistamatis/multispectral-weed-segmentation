@@ -1,0 +1,106 @@
+
+# Final loss optimization: 3-way combined loss με Boundary DoU.
+# loss = 0.4·FocalTversky + 0.4·Lovász + w·BoundaryDoU
+# Grid sweep του w (bdou_weight) σε {0.1, 0.2, 0.3} → 3 runs.
+#
+# Base: winner config (CIR+B+RE, α=0.4/β=0.6, SE fusion, Adam).
+# Reference (FT+Lovász 50/50): mIoU=0.839±0.006, F1=0.909±0.004
+
+
+experiment:
+  name: weedmapping-weedsgalore
+  group: LossOpt-BoundaryDoU
+  continue_with_errors: true
+  start_from_grid: 0
+  start_from_run: 0
+  tracking_dir: null
+  logger: wandb
+  entity: null
+  excluded_files: "*.pth"
+
+parameters:
+  tags: [[loss_opt, boundary_dou, bestcombo, splitlawin_b0]]
+  phases: [[train, test]]
+  dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
+
+  train_params:
+    max_epochs: [500]
+    initial_lr: [0.0001]
+    optimizer: [Adam]
+    optimizer_params:
+      weight_decay: [0]
+    loss:
+      name: [focal_tversky_lovasz_boundary]
+      params:
+        alpha: [0.4]
+        beta: [0.6]
+        gamma: [1.3333]
+        ft_weight: [0.4]
+        lov_weight: [0.4]
+        # Grid sweep — δημιουργεί 3 runs
+        bdou_weight: [0.1, 0.2, 0.3]
+        lovasz_classes: ['present']
+        num_classes: [3]
+    seed: [42]
+    zero_weight_decay_on_bias_and_bn: [True]
+    average_best_models: [False]
+    greater_metric_to_watch_is_better: [False]
+    metric_to_watch: [loss]
+    freeze_pretrained: [False]
+    mixed_precision: [True]
+
+  early_stopping:
+    patience: [30]
+    monitor: [loss]
+    mode: [min]
+
+  train_metrics:
+    f1: &metric_params
+      num_classes: &num_classes [3]
+    iou: *metric_params
+  test_metrics:
+    iou: *metric_params
+    jaccard: *metric_params
+    conf_mat: *metric_params
+    auc: *metric_params
+    f1: *metric_params
+    precision: *metric_params
+    recall: *metric_params
+    perclassauc:
+      discriminator:
+        [[
+          ['auc_background', 0],
+          ['auc_crop', 1],
+          ['auc_weed', 2]
+        ]]
+
+  model:
+    name: [wd/models/splitlawin]
+    params:
+      backbone: [MiT-B0]
+      backbone_pretrained: [True]
+      main_channels: [3]
+      main_pretrained: [['G', 'G', 'R']]
+      side_pretrained: [['B', 'G']]
+      fusion_type: ['squeeze_excite']
+
+  dataset:
+    root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
+    tile: [False]
+    hor_flip: [True]
+    ver_flip: [True]
+    channels: [['CIR', 'B', 'RE']]
+    batch_size: [4]
+    val_batch_size: [2]
+    test_batch_size: [2]
+    num_workers: [0]
+    num_classes: [3]
+    return_path: [True]
+    size: [same]
+    crop_size: [same]
+
+  test_callbacks:
+    PerExampleMetricCallback:
+      phase: [TEST_BATCH_END]
+
+other_grids: []
