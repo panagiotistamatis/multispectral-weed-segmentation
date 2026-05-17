@@ -1,0 +1,105 @@
+
+# Cross-dataset validation: winner config στο WeedMap Rheinbach (RedEdge sensor).
+# Channels = CIR equivalent (NIR,G,R) + B + RE — same effective combo με WeedsGalore winner.
+# Loss = FT(α=0.4,β=0.6) + Lovász (50/50), winner formulation.
+
+
+experiment:
+  name: weedmapping-rededge
+  group: WinnerXdataset-Rheinbach
+  continue_with_errors: true
+  start_from_grid: 0
+  start_from_run: 0
+  tracking_dir: null
+  logger: wandb
+  entity: null
+  excluded_files: "*.pth"
+
+parameters:
+  tags: [[cross_dataset, winner, rheinbach, rededge, splitlawin_b0, focal_tversky_lovasz]]
+  phases: [[train, test]]
+  dataset_interface: [wd/data/WeedMapDatasetInterface]
+
+  train_params:
+    max_epochs: [500]
+    initial_lr: [0.0001]
+    optimizer: [Adam]
+    optimizer_params:
+      weight_decay: [0]
+    loss:
+      name: [focal_tversky_lovasz]
+      params:
+        alpha: [0.4]
+        beta: [0.6]
+        gamma: [1.3333]
+        ft_weight: [0.5]
+        lov_weight: [0.5]
+        lovasz_classes: ['present']
+    seed: [42]
+    zero_weight_decay_on_bias_and_bn: [True]
+    average_best_models: [False]
+    greater_metric_to_watch_is_better: [False]
+    metric_to_watch: [loss]
+    freeze_pretrained: [False]
+    mixed_precision: [True]
+
+  early_stopping:
+    patience: [30]
+    monitor: [loss]
+    mode: [min]
+
+  train_metrics:
+    f1: &metric_params
+      num_classes: &num_classes [3]
+    iou: *metric_params
+  test_metrics:
+    iou: *metric_params
+    jaccard: *metric_params
+    conf_mat: *metric_params
+    auc: *metric_params
+    f1: *metric_params
+    precision: *metric_params
+    recall: *metric_params
+    perclassauc:
+      discriminator:
+        [[
+          ['auc_background', 0],
+          ['auc_crop', 1],
+          ['auc_weed', 2]
+        ]]
+
+  model:
+    name: [wd/models/splitlawin]
+    params:
+      backbone: [MiT-B0]
+      backbone_pretrained: [True]
+      main_channels: [3]
+      # main = CIR composite [NIR, G, R] → pretrained mapping [G, G, R]
+      main_pretrained: [['G', 'G', 'R']]
+      # side = [B, RE] → B uses Blue weights, RE uses G
+      side_pretrained: [['B', 'G']]
+      fusion_type: ['squeeze_excite']
+
+  dataset:
+    root: ["/workspace/dataset/0_rotations_processed_003_test/RedEdge"]
+    train_folders: [['000', '001', '002', '004']]
+    test_folders: [['003']]
+    hor_flip: [True]
+    ver_flip: [True]
+    # Explicit CIR expansion: NIR, G, R = "CIR composite"; + B + RE
+    channels: [['NIR', 'G', 'R', 'B', 'RE']]
+    batch_size: [4]
+    val_batch_size: [8]
+    test_batch_size: [8]
+    num_workers: [0]
+    num_classes: [3]
+    return_path: [True]
+    size: [same]
+    crop_size: [same]
+    pin_memory: [True]
+
+  test_callbacks:
+    PerExampleMetricCallback:
+      phase: [TEST_BATCH_END]
+
+other_grids: []
