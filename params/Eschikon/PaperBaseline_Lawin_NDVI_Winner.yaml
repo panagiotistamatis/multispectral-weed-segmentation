@@ -1,0 +1,111 @@
+
+# Eschikon paper baseline reproduction: Lawin-B0 + NDVI alone.
+# Συνδυασμός: paper architecture (Lawin, 1-channel NDVI) με winner loss
+# (FT+Lovász 50/50) — έτσι ελέγχουμε αν το νέο loss transfer-άρει σε ένα
+# κανάλι που το paper αναφέρει ως καλύτερο για Eschikon.
+#
+# Reference:
+#   - Paper Lawin-B1 NDVI: F1 = 0.685 (best paper baseline για Eschikon)
+#   - Δικιά σου παλιά reproduction (Lawin-B1 NDVI): F1 = 0.641
+#   - Δικιά μας Lawin-B0 paper-style (CIR + Focal+weights): F1 = 0.605
+#
+# Στόχος: ξεπερνάμε το paper Lawin-B0/B1 NDVI με νέα loss.
+
+
+experiment:
+  name: weedmapping-sequoia
+  group: PaperBaseline-Eschikon-NDVI-Winner
+  continue_with_errors: true
+  start_from_grid: 0
+  start_from_run: 0
+  tracking_dir: null
+  logger: wandb
+  entity: null
+  excluded_files: "*.pth"
+
+parameters:
+  tags: [[paper_baseline, eschikon, sequoia, lawin_b0, ndvi_alone, winner_loss]]
+  phases: [[train, test]]
+  dataset_interface: [wd/data/WeedMapDatasetInterface]
+
+  train_params:
+    max_epochs: [500]
+    initial_lr: [0.0001]
+    optimizer: [Adam]
+    optimizer_params:
+      weight_decay: [0]
+    # Winner loss formulation (όπως WeedsGalore best)
+    loss:
+      name: [focal_tversky_lovasz]
+      params:
+        alpha: [0.4]
+        beta: [0.6]
+        gamma: [1.3333]
+        ft_weight: [0.5]
+        lov_weight: [0.5]
+        lovasz_classes: ['present']
+    seed: [42]
+    zero_weight_decay_on_bias_and_bn: [True]
+    average_best_models: [False]
+    greater_metric_to_watch_is_better: [False]
+    metric_to_watch: [loss]
+    freeze_pretrained: [False]
+    mixed_precision: [True]
+
+  early_stopping:
+    patience: [30]
+    monitor: [loss]
+    mode: [min]
+
+  train_metrics:
+    f1: &metric_params
+      num_classes: &num_classes [3]
+    iou: *metric_params
+  test_metrics:
+    iou: *metric_params
+    jaccard: *metric_params
+    conf_mat: *metric_params
+    auc: *metric_params
+    f1: *metric_params
+    precision: *metric_params
+    recall: *metric_params
+    perclassauc:
+      discriminator:
+        [[
+          ['auc_background', 0],
+          ['auc_crop', 1],
+          ['auc_weed', 2]
+        ]]
+
+  # Paper architecture: Lawin (όχι Split), single-channel NDVI input
+  model:
+    name: [wd/models/lawin]
+    params:
+      backbone: [MiT-B0]
+      backbone_pretrained: [True]
+      input_channels: [1]
+      # NDVI = (NIR-R)/(NIR+R) → spectrally closer to R → R pretrained weights
+      main_pretrained: [['R']]
+
+  dataset:
+    root: ["/workspace/dataset/4_rotations_processed_005_test/Sequoia"]
+    train_folders: [['006', '007']]
+    test_folders: [['005']]
+    hor_flip: [True]
+    ver_flip: [True]
+    channels: [['NDVI']]
+    batch_size: [6]
+    val_batch_size: [12]
+    test_batch_size: [12]
+    num_workers: [0]
+    num_classes: [3]
+    return_path: [True]
+    size: [same]
+    crop_size: [same]
+    pin_memory: [True]
+
+  test_callbacks:
+    PerExampleMetricCallback:
+      phase: [TEST_BATCH_END]
+
+other_grids: []
