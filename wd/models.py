@@ -153,10 +153,16 @@ class ASVFInputModule(torch.nn.Module):
         self.proj = torch.nn.Conv2d(cat_dim, in_channels, 1)
 
     def forward(self, x: Tensor) -> Tensor:
-        nir = x[:, self.nir_idx:self.nir_idx + 1]
-        red = x[:, self.red_idx:self.red_idx + 1]
-        ndvi = (nir - red) / (nir + red + 1e-6)
-        ndvi = (ndvi + 1.0) * 0.5  # [-1,1] → [0,1]
+        # NDVI υπολογίζεται σε FP32 για numerical stability υπό mixed precision (AMP):
+        # σε FP16 το ε=1e-6 υποχειλίζει (< smallest FP16 normal ~6e-5) → 0/0 = NaN
+        # σε σκοτεινά pixels (soil) όπου nir+red ≈ 0. Clamp denominator + output.
+        x32 = x.float()
+        nir = x32[:, self.nir_idx:self.nir_idx + 1]
+        red = x32[:, self.red_idx:self.red_idx + 1]
+        denom = (nir + red).clamp(min=1e-3)
+        ndvi = (nir - red) / denom
+        ndvi = ((ndvi + 1.0) * 0.5).clamp(0.0, 1.0)  # [-1,1] → [0,1], guarded
+        ndvi = ndvi.to(x.dtype)  # back to AMP dtype
         f_main = self.main_conv(x)
         f_v = self.veg_conv(ndvi)
         f_cat = torch.cat([f_main, f_v], dim=1)
