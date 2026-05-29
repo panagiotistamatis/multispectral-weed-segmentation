@@ -118,6 +118,59 @@ class DoubleLaweed(BaseDoubleLawin):
         super().__init__(arch_params, LaweedHead)
 
 
+class ASVFInputModule(torch.nn.Module):
+    """Adaptive Spectral-Vegetation Fusion at the input stage.
+
+    Adapted from ASVLB-Net (Dong et al., Pest Manag Sci 2026, Eq. 1-6) for SplitLawin.
+    Computes NDVI from NIR & R bands, then adaptively fuses raw spectral features
+    με τον vegetation-index prior μέσω channel + spatial attention (learnable α).
+    Το output ΔΙΑΤΗΡΕΙ το input channel count (residual), ώστε τα downstream backbones
+    να κρατούν τα ImageNet-pretrained weights τους.
+    """
+    def __init__(self, in_channels: int, nir_idx: int, red_idx: int,
+                 main_dim: int = 32, veg_dim: int = 16):
+        super().__init__()
+        self.nir_idx = nir_idx
+        self.red_idx = red_idx
+        # Main spectral branch (preliminary encoding, Eq. 1-context)
+        self.main_conv = torch.nn.Conv2d(in_channels, main_dim, 3, padding=1)
+        # Vegetation branch: NDVI → conv1x1 (Eq. 2)
+        self.veg_conv = torch.nn.Conv2d(1, veg_dim, 1)
+        cat_dim = main_dim + veg_dim
+        # Channel attention (Eq. 3-4): GAP → conv-relu-conv → sigmoid
+        self.ca = torch.nn.Sequential(
+            torch.nn.AdaptiveAvgPool2d(1),
+            torch.nn.Conv2d(cat_dim, max(cat_dim // 4, 1), 1),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.Conv2d(max(cat_dim // 4, 1), cat_dim, 1),
+            torch.nn.Sigmoid(),
+        )
+        # Spatial attention (Eq. 5): per-branch 1x1 → learnable α blend → sigmoid
+        self.main_sp = torch.nn.Conv2d(main_dim, 1, 1)
+        self.veg_sp = torch.nn.Conv2d(veg_dim, 1, 1)
+        self.alpha = torch.nn.Parameter(torch.tensor(0.5))
+        # Project back σε input channel count + residual (Eq. 6)
+        self.proj = torch.nn.Conv2d(cat_dim, in_channels, 1)
+
+    def forward(self, x: Tensor) -> Tensor:
+        nir = x[:, self.nir_idx:self.nir_idx + 1]
+        red = x[:, self.red_idx:self.red_idx + 1]
+        ndvi = (nir - red) / (nir + red + 1e-6)
+        ndvi = (ndvi + 1.0) * 0.5  # [-1,1] → [0,1]
+        f_main = self.main_conv(x)
+        f_v = self.veg_conv(ndvi)
+        f_cat = torch.cat([f_main, f_v], dim=1)
+        # channel attention (Eq. 3-4)
+        f_c = f_cat * self.ca(f_cat)
+        # spatial attention με learnable α (Eq. 5)
+        m_s = torch.sigmoid(
+            self.alpha * self.main_sp(f_main) + (1.0 - self.alpha) * self.veg_sp(f_v)
+        )
+        f_c = f_c * m_s
+        # project back + residual (Eq. 6)
+        return self.proj(f_c) + x
+
+
 class BaseSplitLawin(BaseLawin):
     def __init__(self, arch_params, lawin_class) -> None:
         backbone = get_param(arch_params, "backbone", 'MiT-B0')
@@ -127,6 +180,8 @@ class BaseSplitLawin(BaseLawin):
         self.side_channels = arch_params['input_channels'] - main_channels
         self.side_pretrained = get_param(arch_params, "side_pretrained", None)
         self.main_channels = main_channels
+        # Total input channels (πριν το overwrite στη γραμμή που ακολουθεί)
+        _total_input_channels = arch_params['input_channels']
         arch_params['input_channels'] = arch_params['main_channels']
         super().__init__(arch_params, lawin_class)
         self.side_backbone = self.eval_backbone(backbone, self.side_channels,
@@ -146,8 +201,19 @@ class BaseSplitLawin(BaseLawin):
         fusion_type = get_param(arch_params, "fusion_type", None)
         self.fusion = MiTFusion(self.backbone.channels,
                                 **filter_none({"p_local": p_local, "p_glob": p_glob, "fusion_type": fusion_type}))
+        # Optional ASVF input module (ASVLB-Net inspired). Created AFTER super().__init__
+        # ώστε να μην επηρεαστεί από το _init_weights pass του BaseLawin.
+        if get_param(arch_params, "use_asvf", False):
+            # Default indices για CIR+B+RE → expanded [NIR, G, R, B, RE]: NIR=0, R=2
+            nir_idx = get_param(arch_params, "asvf_nir_idx", 0)
+            red_idx = get_param(arch_params, "asvf_red_idx", 2)
+            self.asvf = ASVFInputModule(_total_input_channels, nir_idx, red_idx)
+        else:
+            self.asvf = None
 
     def forward(self, x: Tensor) -> Tensor:
+        if self.asvf is not None:
+            x = self.asvf(x)
         main_channels = x[:, :self.main_channels, ::].contiguous()
         side_channels = x[:, self.main_channels:, ::].contiguous()
         first_feat_side = self.side_backbone(side_channels)
