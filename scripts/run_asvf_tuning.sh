@@ -18,6 +18,7 @@ declare -a EXPERIMENTS=(
     "dual_index:ASVF_DualIndex"
     "combo_coord:ASVF_Combo_CoordAttn"
     "alpha_03:ASVF_AlphaInit_03"
+    "alpha_07:ASVF_AlphaInit_07"
 )
 
 mkdir -p logs
@@ -25,7 +26,7 @@ OVERALL_START=$(date +%s)
 echo "============================================================"
 echo "ASVF Tuning Experiments Runner"
 echo "Started: $(date)"
-echo "Experiments: ${#EXPERIMENTS[@]} (dual_index, combo_coord, alpha_03)"
+echo "Experiments: ${#EXPERIMENTS[@]} (dual_index, combo_coord, alpha_03, alpha_07)"
 echo "Reference: ASVF baseline mIoU=0.8442"
 echo "============================================================"
 
