@@ -1,0 +1,113 @@
+
+# Sprint 2 tuning: ASVF με DUAL vegetation indices (NDVI + NDRE).
+# Winner config (CIR+B+RE, FT+Lov 50/50) + ASVF + NDRE branch.
+# Reference: ASVF NDVI-only mIoU=0.8442, F1=0.9118
+# Hypothesis: NDRE (chlorophyll-sensitive, από NIR-RE) complementary στο NDVI
+# (cover-sensitive, από NIR-R). Στο paper NDVI=86.5%, NDRE=85.95% INDIVIDUALLY —
+# dual δεν δοκιμάστηκε. Πιθανό novel finding για εμάς.
+#
+# Channel layout CIR+B+RE → [NIR=0, G=1, R=2, B=3, RE=4]
+
+
+experiment:
+  name: weedmapping-weedsgalore
+  group: ASVF-DualIndex-WeedsGalore
+  continue_with_errors: false
+  start_from_grid: 0
+  start_from_run: 0
+  tracking_dir: null
+  logger: wandb
+  entity: null
+  excluded_files: "*.pth"
+
+parameters:
+  tags: [[asvf_dual_index, ndvi_ndre, focal_tversky_lovasz, cir_b_re, splitlawin_b0]]
+  phases: [[train, test]]
+  dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
+
+  train_params:
+    max_epochs: [500]
+    initial_lr: [0.0001]
+    optimizer: [Adam]
+    optimizer_params:
+      weight_decay: [0]
+    loss:
+      name: [focal_tversky_lovasz]
+      params:
+        alpha: [0.4]
+        beta: [0.6]
+        gamma: [1.3333]
+        ft_weight: [0.5]
+        lov_weight: [0.5]
+        lovasz_classes: ['present']
+    seed: [42]
+    zero_weight_decay_on_bias_and_bn: [True]
+    average_best_models: [False]
+    greater_metric_to_watch_is_better: [False]
+    metric_to_watch: [loss]
+    freeze_pretrained: [False]
+    mixed_precision: [True]
+
+  early_stopping:
+    patience: [30]
+    monitor: [loss]
+    mode: [min]
+
+  train_metrics:
+    f1: &metric_params
+      num_classes: &num_classes [3]
+    iou: *metric_params
+  test_metrics:
+    iou: *metric_params
+    jaccard: *metric_params
+    conf_mat: *metric_params
+    auc: *metric_params
+    f1: *metric_params
+    precision: *metric_params
+    recall: *metric_params
+    perclassauc:
+      discriminator:
+        [[
+          ['auc_background', 0],
+          ['auc_crop', 1],
+          ['auc_weed', 2]
+        ]]
+
+  model:
+    name: [wd/models/splitlawin]
+    params:
+      backbone: [MiT-B0]
+      backbone_pretrained: [True]
+      main_channels: [3]
+      main_pretrained: [['G', 'G', 'R']]
+      side_pretrained: [['B', 'G']]
+      fusion_type: ['squeeze_excite']
+      # ASVF με DUAL index (NDVI + NDRE)
+      use_asvf: [True]
+      asvf_nir_idx: [0]
+      asvf_red_idx: [2]
+      asvf_use_ndre: [True]   # ⬅️ ΔΥΟ vegetation branches
+      asvf_re_idx: [4]
+      asvf_alpha_init: [0.5]
+      asvf_beta_init: [0.5]   # NDVI/NDRE blend, learnable
+
+  dataset:
+    root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
+    tile: [False]
+    hor_flip: [True]
+    ver_flip: [True]
+    channels: [['CIR', 'B', 'RE']]
+    batch_size: [4]
+    val_batch_size: [2]
+    test_batch_size: [2]
+    num_workers: [0]
+    num_classes: [3]
+    return_path: [True]
+    size: [same]
+    crop_size: [same]
+
+  test_callbacks:
+    PerExampleMetricCallback:
+      phase: [TEST_BATCH_END]
+
+other_grids: []

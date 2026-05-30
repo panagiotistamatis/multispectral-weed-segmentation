@@ -1,0 +1,108 @@
+
+# Sprint 2 tuning: ASVF με α_init=0.3 (biased toward vegetation prior).
+# Σχηματικά Eq.5: M_s = σ(α·M_main + (1-α)·M_vegetation)
+#   α=0.5 (current best, mIoU=0.8442): balanced
+#   α=0.3 (this): vegetation-dominant (0.7 weight on NDVI signal)
+#   α=0.7 (future): main-dominant
+# Hypothesis: crop ωφελήθηκε +8.8pp από NDVI prior, ίσως περισσότερη vegetation
+# επιρροή βοηθήσει κι άλλο. α είναι learnable — init μόνο affects starting point.
+
+
+experiment:
+  name: weedmapping-weedsgalore
+  group: ASVF-AlphaInit-03
+  continue_with_errors: false
+  start_from_grid: 0
+  start_from_run: 0
+  tracking_dir: null
+  logger: wandb
+  entity: null
+  excluded_files: "*.pth"
+
+parameters:
+  tags: [[asvf_alpha_init_03, focal_tversky_lovasz, cir_b_re, splitlawin_b0]]
+  phases: [[train, test]]
+  dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
+
+  train_params:
+    max_epochs: [500]
+    initial_lr: [0.0001]
+    optimizer: [Adam]
+    optimizer_params:
+      weight_decay: [0]
+    loss:
+      name: [focal_tversky_lovasz]
+      params:
+        alpha: [0.4]
+        beta: [0.6]
+        gamma: [1.3333]
+        ft_weight: [0.5]
+        lov_weight: [0.5]
+        lovasz_classes: ['present']
+    seed: [42]
+    zero_weight_decay_on_bias_and_bn: [True]
+    average_best_models: [False]
+    greater_metric_to_watch_is_better: [False]
+    metric_to_watch: [loss]
+    freeze_pretrained: [False]
+    mixed_precision: [True]
+
+  early_stopping:
+    patience: [30]
+    monitor: [loss]
+    mode: [min]
+
+  train_metrics:
+    f1: &metric_params
+      num_classes: &num_classes [3]
+    iou: *metric_params
+  test_metrics:
+    iou: *metric_params
+    jaccard: *metric_params
+    conf_mat: *metric_params
+    auc: *metric_params
+    f1: *metric_params
+    precision: *metric_params
+    recall: *metric_params
+    perclassauc:
+      discriminator:
+        [[
+          ['auc_background', 0],
+          ['auc_crop', 1],
+          ['auc_weed', 2]
+        ]]
+
+  model:
+    name: [wd/models/splitlawin]
+    params:
+      backbone: [MiT-B0]
+      backbone_pretrained: [True]
+      main_channels: [3]
+      main_pretrained: [['G', 'G', 'R']]
+      side_pretrained: [['B', 'G']]
+      fusion_type: ['squeeze_excite']
+      use_asvf: [True]
+      asvf_nir_idx: [0]
+      asvf_red_idx: [2]
+      asvf_alpha_init: [0.3]    # ⬅️ MORE vegetation weight at init
+
+  dataset:
+    root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
+    tile: [False]
+    hor_flip: [True]
+    ver_flip: [True]
+    channels: [['CIR', 'B', 'RE']]
+    batch_size: [4]
+    val_batch_size: [2]
+    test_batch_size: [2]
+    num_workers: [0]
+    num_classes: [3]
+    return_path: [True]
+    size: [same]
+    crop_size: [same]
+
+  test_callbacks:
+    PerExampleMetricCallback:
+      phase: [TEST_BATCH_END]
+
+other_grids: []
