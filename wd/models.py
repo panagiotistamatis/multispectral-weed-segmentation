@@ -250,10 +250,13 @@ class CLIPCrossAttentionModule(torch.nn.Module):
             text_outputs = text_model(**tokens)
             # pooler_output: [num_prompts, text_dim] (EOS-token representation)
             T_raw = text_outputs.pooler_output.detach().clone()
+            # L2-normalize ώστε όλα τα prompts να έχουν unit magnitude — αποφεύγει
+            # large-scale CLIP magnitudes που θα κυριαρχούσαν στο residual addition.
+            T_raw = torch.nn.functional.normalize(T_raw, dim=-1)
         # Free CLIP (~63M params) — δεν χρειάζονται πια
         del tokenizer, text_model, text_outputs, tokens
 
-        # Cache raw CLIP embeddings ως buffer (moves με .to(device), δεν trainable)
+        # Cache normalized CLIP embeddings ως buffer
         self.register_buffer("text_embeds", T_raw, persistent=True)
         self.num_classes = T_raw.shape[0]
 
@@ -269,6 +272,12 @@ class CLIPCrossAttentionModule(torch.nn.Module):
         self.k_proj = torch.nn.Linear(feat_dim, feat_dim)
         self.v_proj = torch.nn.Linear(feat_dim, feat_dim)
         self.scale = feat_dim ** -0.5
+
+        # ZERO-INIT του v_proj (ControlNet-style): αρχικά attended=0 → output=x,
+        # ώστε το CLIP module να αρχίζει σαν no-op και να εισάγεται σταδιακά
+        # μέσω learning. Αποφεύγει class collapse από random init στα early epochs.
+        torch.nn.init.zeros_(self.v_proj.weight)
+        torch.nn.init.zeros_(self.v_proj.bias)
 
     def forward(self, x: Tensor) -> Tensor:
         """x: [B, C=256, H, W] visual features → enhanced via CLIP guidance.
