@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Sequential runner για multi-seed verification του winner config.
-# Trains 2 extra seeds (43, 44) — έχουμε ήδη seed=42 → mIoU=0.8430.
+# Sequential runner για multi-seed verification του ASVF NDVI winner.
+# Trains 2 extra seeds (43, 44) — έχουμε ήδη seed=42 → mIoU=0.8442.
 # Output: mean ± std across 3 seeds για statistical reporting στο thesis.
 #
 # Usage:
@@ -14,8 +14,8 @@ if [[ -z "${WANDB_API_KEY:-}" ]]; then
 fi
 
 declare -a SEEDS=(
-    "seed_43:MultiSeed_Winner_S43"
-    "seed_44:MultiSeed_Winner_S44"
+    "seed_43:ASVF_NDVI_seed43"
+    "seed_44:ASVF_NDVI_seed44"
 )
 
 mkdir -p logs
@@ -25,7 +25,7 @@ echo "============================================================"
 echo "Multi-Seed Winner Verification"
 echo "Started: $(date)"
 echo "Runs:    ${#SEEDS[@]} (seeds 43, 44 — seed 42 already done)"
-echo "Reference (seed=42): mIoU=0.8430, F1=0.9118"
+echo "Reference (seed=42, ASVF NDVI winner): mIoU=0.8442, F1=0.9118"
 echo "============================================================"
 
 PASSED=0
