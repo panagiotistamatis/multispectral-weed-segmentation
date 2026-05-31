@@ -219,6 +219,83 @@ class ASVFInputModule(torch.nn.Module):
         return self.proj(f_c) + x
 
 
+class CLIPCrossAttentionModule(torch.nn.Module):
+    """CLIP-guided cross-attention για semantic decoder enhancement.
+
+    Adapted από Papadeas et al. (CLIP Meets DINOv3, Eq. 11-17) στην αρχιτεκτονική
+    SplitLawin+Lawin decoder. Εφαρμόζεται στα 256-channel decoder features ΠΡΙΝ
+    το final 1×1 classification conv. Cross-attention μεταξύ visual queries και
+    frozen CLIP text embeddings από class-specific prompts.
+
+    Memory-efficient: φορτώνει CLIP text encoder ΜΟΝΟ at init για να υπολογίσει
+    τα raw text embeddings, μετά τα cache-άρει ως buffer + discards το CLIP model.
+    Στο training cost είναι ~0 (text embeddings constant ~6KB + lightweight attn).
+    """
+    def __init__(self, prompts, feat_dim: int = 256, text_dim: int = 512,
+                 clip_model: str = "openai/clip-vit-base-patch16"):
+        super().__init__()
+        # Load CLIP text encoder ONCE, compute prompt embeddings, then DISCARD.
+        try:
+            from transformers import CLIPTokenizer, CLIPTextModel
+        except ImportError as e:
+            raise ImportError(
+                "transformers package required για CLIPCrossAttentionModule"
+            ) from e
+
+        tokenizer = CLIPTokenizer.from_pretrained(clip_model)
+        text_model = CLIPTextModel.from_pretrained(clip_model)
+        text_model.eval()
+        with torch.no_grad():
+            tokens = tokenizer(list(prompts), padding=True, return_tensors="pt")
+            text_outputs = text_model(**tokens)
+            # pooler_output: [num_prompts, text_dim] (EOS-token representation)
+            T_raw = text_outputs.pooler_output.detach().clone()
+        # Free CLIP (~63M params) — δεν χρειάζονται πια
+        del tokenizer, text_model, text_outputs, tokens
+
+        # Cache raw CLIP embeddings ως buffer (moves με .to(device), δεν trainable)
+        self.register_buffer("text_embeds", T_raw, persistent=True)
+        self.num_classes = T_raw.shape[0]
+
+        # Trainable text projection (Eq. 11): 512 → 256 with LayerNorm + ReLU
+        self.text_proj = torch.nn.Sequential(
+            torch.nn.Linear(text_dim, feat_dim),
+            torch.nn.LayerNorm(feat_dim),
+            torch.nn.ReLU(inplace=True),
+        )
+
+        # Cross-attention projections (Eq. 12-14)
+        self.q_proj = torch.nn.Conv2d(feat_dim, feat_dim, kernel_size=1)
+        self.k_proj = torch.nn.Linear(feat_dim, feat_dim)
+        self.v_proj = torch.nn.Linear(feat_dim, feat_dim)
+        self.scale = feat_dim ** -0.5
+
+    def forward(self, x: Tensor) -> Tensor:
+        """x: [B, C=256, H, W] visual features → enhanced via CLIP guidance.
+        Residual connection (Eq. 17): out = x + attended."""
+        B, C, H, W = x.shape
+
+        # Project text embeddings (Eq. 11): [num_classes, feat_dim]
+        # Cast σε x.dtype για AMP compatibility
+        T_prime = self.text_proj(self.text_embeds.to(x.dtype))
+
+        # Q from visual features (Eq. 12): [B, HW, C]
+        q = self.q_proj(x).flatten(2).transpose(1, 2)
+
+        # K, V from text features (Eq. 13-14): [1, num_classes, C]
+        k = self.k_proj(T_prime).unsqueeze(0)
+        v = self.v_proj(T_prime).unsqueeze(0)
+
+        # Cross-attention (Eq. 15): [B, HW, num_classes]
+        attn = torch.softmax(torch.matmul(q, k.transpose(-2, -1)) * self.scale, dim=-1)
+
+        # Attended features (Eq. 16): [B, HW, C] → [B, C, H, W]
+        attended = torch.matmul(attn, v).transpose(1, 2).reshape(B, C, H, W)
+
+        # Residual (Eq. 17)
+        return x + attended
+
+
 class BaseSplitLawin(BaseLawin):
     def __init__(self, arch_params, lawin_class) -> None:
         backbone = get_param(arch_params, "backbone", 'MiT-B0')
@@ -266,6 +343,22 @@ class BaseSplitLawin(BaseLawin):
             )
         else:
             self.asvf = None
+
+        # Optional CLIP cross-attention στο decoder (Papadeas et al. inspired).
+        # Φορτώνει frozen CLIP text encoder, encodes τα class prompts μία φορά,
+        # μετά cache + discard. Inject στο LawinHead.clip_module.
+        if get_param(arch_params, "use_clip", False):
+            prompts = get_param(
+                arch_params, "clip_prompts",
+                ["background soil", "crop plant leaf", "weed plant"],
+            )
+            # Decoder embed_dim είναι 256 για B0 backbones (line ~26 του BaseLawin)
+            feat_dim = 256 if 'B0' in get_param(arch_params, "backbone", 'MiT-B0') else 512
+            self.decode_head.clip_module = CLIPCrossAttentionModule(
+                prompts=prompts,
+                feat_dim=feat_dim,
+                clip_model=get_param(arch_params, "clip_model", "openai/clip-vit-base-patch16"),
+            )
 
     def forward(self, x: Tensor) -> Tensor:
         if self.asvf is not None:
