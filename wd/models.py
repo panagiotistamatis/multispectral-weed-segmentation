@@ -429,14 +429,25 @@ class BaseSplitLawin(BaseLawin):
                 clip_model=get_param(arch_params, "clip_model", "openai/clip-vit-base-patch16"),
             )
 
-        # Optional Bottleneck-SCSA στο deepest encoder feature (F4) πριν decoder.
+        # Optional Bottleneck-SCSA σε ένα ή ΠΕΡΙΣΣΟΤΕΡΑ encoder features.
         # ASVLB-Net inspired (Dong 2026 Eq.9-11). Spatial+channel synergistic
-        # attention για long-range dependencies στο deepest feature.
-        if get_param(arch_params, "use_scsa", False):
-            f4_channels = self.backbone.channels[-1]
-            self.scsa = BottleneckSCSAModule(f4_channels)
+        # attention για long-range dependencies.
+        #   - use_scsa: True (backward compat) → defaults σε F4 μόνο
+        #   - scsa_levels: [3, 4] → F3 + F4 (1-indexed, F1..F4)
+        #   - scsa_levels: [2, 3, 4] → F2 + F3 + F4
+        scsa_levels = get_param(arch_params, "scsa_levels", None)
+        if scsa_levels is None and get_param(arch_params, "use_scsa", False):
+            scsa_levels = [4]
+        if scsa_levels:
+            # 1-indexed (F1=1..F4=4) → 0-indexed (feat[0]..feat[3])
+            self.scsa_indices = [lvl - 1 for lvl in scsa_levels]
+            self.scsa_modules = torch.nn.ModuleList([
+                BottleneckSCSAModule(self.backbone.channels[i])
+                for i in self.scsa_indices
+            ])
         else:
-            self.scsa = None
+            self.scsa_indices = None
+            self.scsa_modules = None
 
     def forward(self, x: Tensor) -> Tensor:
         if self.asvf is not None:
@@ -447,9 +458,12 @@ class BaseSplitLawin(BaseLawin):
         first_feat_main = self.backbone.partial_forward(main_channels, slice(0, 1))
         first_feat = self.fusion((first_feat_main, first_feat_side))[0]
         feat = (first_feat,) + self.backbone.partial_forward(first_feat, slice(1, 4))
-        # Optional Bottleneck-SCSA στο F4 (deepest) πριν τον decoder
-        if self.scsa is not None:
-            feat = feat[:-1] + (self.scsa(feat[-1]),)
+        # Optional Bottleneck-SCSA σε ένα ή περισσότερα encoder levels πριν decoder
+        if self.scsa_modules is not None:
+            feat = list(feat)
+            for mod, idx in zip(self.scsa_modules, self.scsa_indices):
+                feat[idx] = mod(feat[idx])
+            feat = tuple(feat)
         y = self.decode_head(feat)  # 4x reduction in image size
         y = F.interpolate(y, size=x.shape[2:], mode='bilinear', align_corners=False)  # to original image shape
         return y
