@@ -219,6 +219,66 @@ class ASVFInputModule(torch.nn.Module):
         return self.proj(f_c) + x
 
 
+class BottleneckSCSAModule(torch.nn.Module):
+    """Spatial-Channel Synergistic Attention στο bottleneck (deepest encoder F4).
+
+    Adapted από ASVLB-Net (Dong et al., Pest Manag Sci 2026, Eq. 9-11) για το
+    SplitLawin pipeline. Εφαρμόζεται στο deepest feature (F4) μεταξύ encoder
+    και Lawin decoder. Multi-scale DWConv branches (kernels 3/5/7/9) για spatial
+    attention, μετά channel self-attention. Residual connection — preserves
+    input channel count.
+    """
+    def __init__(self, channels: int):
+        super().__init__()
+        compressed = max(channels // 2, 4)
+        # Compress (Eq. 9): Conv-BN-ReLU 2C → C concept
+        self.compress = torch.nn.Sequential(
+            torch.nn.Conv2d(channels, compressed, 1, bias=False),
+            torch.nn.BatchNorm2d(compressed),
+            torch.nn.ReLU(inplace=True),
+        )
+        # Split σε 4 groups + multi-scale DWConv για spatial attention map W
+        # Uneven split αν compressed % 4 != 0 — τελευταίο group παίρνει το remainder
+        c_split = compressed // 4
+        c_rem = compressed - 3 * c_split
+        self.split_sizes = [c_split, c_split, c_split, c_rem]
+        self.dw3 = torch.nn.Conv2d(c_split, c_split, 3, padding=1, groups=c_split)
+        self.dw5 = torch.nn.Conv2d(c_split, c_split, 5, padding=2, groups=c_split)
+        self.dw7 = torch.nn.Conv2d(c_split, c_split, 7, padding=3, groups=c_split)
+        self.dw9 = torch.nn.Conv2d(c_rem, c_rem, 9, padding=4, groups=c_rem)
+        # Channel attention (Eq. 10): GAP → bottleneck conv → sigmoid
+        ca_hidden = max(compressed // 4, 1)
+        self.ca = torch.nn.Sequential(
+            torch.nn.AdaptiveAvgPool2d(1),
+            torch.nn.Conv2d(compressed, ca_hidden, 1),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.Conv2d(ca_hidden, compressed, 1),
+            torch.nn.Sigmoid(),
+        )
+        # Restore (Eq. 11): C → 2C concept (compressed → channels) + residual
+        self.restore = torch.nn.Sequential(
+            torch.nn.Conv2d(compressed, channels, 1, bias=False),
+            torch.nn.BatchNorm2d(channels),
+            torch.nn.ReLU(inplace=True),
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        f_conv = self.compress(x)  # [B, compressed, H, W]
+        # Multi-scale DWConv για spatial attention W (Eq. 10 context)
+        groups = torch.split(f_conv, self.split_sizes, dim=1)
+        sp = torch.cat([
+            self.dw3(groups[0]),
+            self.dw5(groups[1]),
+            self.dw7(groups[2]),
+            self.dw9(groups[3]),
+        ], dim=1)
+        W = torch.sigmoid(sp)
+        SA = W * f_conv                # spatial-attended features
+        CA = self.ca(SA)               # channel attention vector [B, compressed, 1, 1]
+        f_scsa = SA * CA               # synergistic spatial+channel
+        return self.restore(f_scsa) + x  # restore + residual (Eq. 11)
+
+
 class CLIPCrossAttentionModule(torch.nn.Module):
     """CLIP-guided cross-attention για semantic decoder enhancement.
 
@@ -369,6 +429,15 @@ class BaseSplitLawin(BaseLawin):
                 clip_model=get_param(arch_params, "clip_model", "openai/clip-vit-base-patch16"),
             )
 
+        # Optional Bottleneck-SCSA στο deepest encoder feature (F4) πριν decoder.
+        # ASVLB-Net inspired (Dong 2026 Eq.9-11). Spatial+channel synergistic
+        # attention για long-range dependencies στο deepest feature.
+        if get_param(arch_params, "use_scsa", False):
+            f4_channels = self.backbone.channels[-1]
+            self.scsa = BottleneckSCSAModule(f4_channels)
+        else:
+            self.scsa = None
+
     def forward(self, x: Tensor) -> Tensor:
         if self.asvf is not None:
             x = self.asvf(x)
@@ -378,6 +447,9 @@ class BaseSplitLawin(BaseLawin):
         first_feat_main = self.backbone.partial_forward(main_channels, slice(0, 1))
         first_feat = self.fusion((first_feat_main, first_feat_side))[0]
         feat = (first_feat,) + self.backbone.partial_forward(first_feat, slice(1, 4))
+        # Optional Bottleneck-SCSA στο F4 (deepest) πριν τον decoder
+        if self.scsa is not None:
+            feat = feat[:-1] + (self.scsa(feat[-1]),)
         y = self.decode_head(feat)  # 4x reduction in image size
         y = F.interpolate(y, size=x.shape[2:], mode='bilinear', align_corners=False)  # to original image shape
         return y
