@@ -23,11 +23,17 @@ class BaseLawin(BaseModel):
         backbone_pretrained = get_param(arch_params, "backbone_pretrained", False)
         pretrained_channels = get_param(arch_params, "main_pretrained", None)
         super().__init__(backbone, input_channels, backbone_pretrained)
-        # Optional configurable Lawin attention ratios (default [8,4,2] paper-original).
-        # Π.χ. lawin_ratios: [12, 4, 2] για 608×608 input scale extension.
-        # Conditional pass — μόνο LawinHead δέχεται `ratios` (LaweedHead δεν).
+        # Optional configurable Lawin attention ratios + patch_size.
+        # Default behavior: ratios=[8,4,2], patch_size=8 (paper-original, 256×256 input).
+        # Για 608×608: π.χ. lawin_ratios=[12,4,2] ή patch_size=12 με ratios=[6,4,2].
+        # Conditional pass — μόνο LawinHead δέχεται τα κλειδιά (LaweedHead δεν).
         lawin_ratios = get_param(arch_params, "lawin_ratios", None)
-        head_extra = {"ratios": lawin_ratios} if lawin_ratios is not None else {}
+        lawin_patch_size = get_param(arch_params, "lawin_patch_size", None)
+        head_extra = {}
+        if lawin_ratios is not None:
+            head_extra["ratios"] = lawin_ratios
+        if lawin_patch_size is not None:
+            head_extra["patch_size"] = lawin_patch_size
         self.decode_head = lawin_class(
             self.backbone.channels,
             256 if 'B0' in backbone else 512,
