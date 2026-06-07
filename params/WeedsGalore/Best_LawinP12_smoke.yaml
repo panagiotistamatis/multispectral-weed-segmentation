@@ -17,6 +17,8 @@ parameters:
   tags: [[smoke, lawin_p12_r642]]
   phases: [[train, test]]
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
+  # Skip ptflops summary (fails silently with custom patch_size config)
+  print_model_summary: [False]
 
   train_params:
     max_epochs: [1]
