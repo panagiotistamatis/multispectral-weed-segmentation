@@ -1,10 +1,10 @@
 
-# Sprint 5: Winner config (ASVF + SCSA F4) + Lawin ratios [12, 4, 2].
+# Sprint 5: Winner config (ASVF + SCSA F4) + Lawin FULL pyramid [12, 8, 4, 2].
 # Reference winner: mIoU=0.8469, F1≈0.913
 # Hypothesis: η αρχιτεκτονική Lawin σχεδιάστηκε για 256×256 input όπου R=8 κάλυπτε
 # 100% του feature map. Στο 608×608 (no-tile) μας, R=8 → 64×64 = 42% coverage.
-# Αντικατάσταση R=8 → R=12 αυξάνει global context coverage σε 63% χωρίς memory hit.
-# Διατηρούμε R=2, R=4 για fine/medium detail.
+# Προσθήκη R=12 (96×96 = 63% coverage) ως EXTRA scale πάνω από τον original pyramid.
+# Με batch=2 χωράμε όλα τα 4 scales [12, 8, 4, 2] στο 1080 Ti.
 
 
 experiment:
@@ -86,8 +86,9 @@ parameters:
       asvf_red_idx: [2]
       # SCSA F4 only (winner)
       use_scsa: [True]
-      # Lawin pyramid ratios: R=8 → R=12 (scale extension for 608 input)
-      lawin_ratios: [[12, 4, 2]]
+      # Full Lawin pyramid με R=12 scale extension για 608 input.
+      # [12, 8, 4, 2]: extra-large + large (paper) + medium + fine
+      lawin_ratios: [[12, 8, 4, 2]]
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

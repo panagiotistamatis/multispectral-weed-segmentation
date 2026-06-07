@@ -68,7 +68,7 @@ parameters:
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
       use_scsa: [True]
-      lawin_ratios: [[12, 4, 2]]
+      lawin_ratios: [[12, 8, 4, 2]]
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
@@ -76,9 +76,10 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    batch_size: [4]
-    val_batch_size: [2]
-    test_batch_size: [2]
+    # Smoke σε batch=2 για επιβεβαίωση memory με full pyramid [12,8,4,2]
+    batch_size: [2]
+    val_batch_size: [1]
+    test_batch_size: [1]
     num_workers: [0]
     num_classes: [3]
     return_path: [True]
