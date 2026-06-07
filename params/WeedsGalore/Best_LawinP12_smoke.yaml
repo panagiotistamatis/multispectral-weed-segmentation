@@ -70,7 +70,7 @@ parameters:
       asvf_red_idx: [2]
       use_scsa: [True]
       lawin_patch_size: [12]
-      lawin_ratios: [[6, 4, 2]]
+      lawin_ratios: [[8, 4, 2]]
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

@@ -85,9 +85,9 @@ parameters:
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
       use_scsa: [True]
-      # Lawin attention reshape: P=8→12, R=[8,4,2]→[6,4,2]
+      # Lawin attention: P=8→12 (larger queries για 608 input), keep paper ratios
       lawin_patch_size: [12]
-      lawin_ratios: [[6, 4, 2]]
+      lawin_ratios: [[8, 4, 2]]
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
