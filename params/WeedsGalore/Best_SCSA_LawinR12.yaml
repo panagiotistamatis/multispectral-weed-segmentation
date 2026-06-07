@@ -95,9 +95,10 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    batch_size: [4]
-    val_batch_size: [2]
-    test_batch_size: [2]
+    # batch=4 έδωσε gpu_mem=10.7GB (danger zone). Drop σε 2 για safe overnight.
+    batch_size: [2]
+    val_batch_size: [1]
+    test_batch_size: [1]
     num_workers: [0]
     num_classes: [3]
     return_path: [True]
