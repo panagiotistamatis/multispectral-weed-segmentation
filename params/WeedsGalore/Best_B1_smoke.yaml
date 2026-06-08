@@ -1,0 +1,90 @@
+
+# Smoke (1 epoch) για MiT-B1 winner config. Memory check (B1 σε batch=2 χωράει;)
+
+
+experiment:
+  name: weedmapping-weedsgalore
+  group: Best-B1-SMOKE
+  continue_with_errors: false
+  start_from_grid: 0
+  start_from_run: 0
+  tracking_dir: null
+  logger: wandb
+  entity: null
+  excluded_files: "*.pth"
+
+parameters:
+  tags: [[smoke, mit_b1]]
+  phases: [[train, test]]
+  dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
+
+  train_params:
+    max_epochs: [1]
+    initial_lr: [0.0001]
+    optimizer: [Adam]
+    optimizer_params:
+      weight_decay: [0]
+    loss:
+      name: [focal_tversky_lovasz]
+      params:
+        alpha: [0.4]
+        beta: [0.6]
+        gamma: [1.3333]
+        ft_weight: [0.5]
+        lov_weight: [0.5]
+        lovasz_classes: ['present']
+    seed: [42]
+    zero_weight_decay_on_bias_and_bn: [True]
+    average_best_models: [False]
+    greater_metric_to_watch_is_better: [False]
+    metric_to_watch: [loss]
+    freeze_pretrained: [False]
+    mixed_precision: [True]
+
+  early_stopping:
+    patience: [5]
+    monitor: [loss]
+    mode: [min]
+
+  train_metrics:
+    f1: &metric_params
+      num_classes: &num_classes [3]
+    iou: *metric_params
+  test_metrics:
+    iou: *metric_params
+    f1: *metric_params
+
+  model:
+    name: [wd/models/splitlawin]
+    params:
+      backbone: [MiT-B1]
+      backbone_pretrained: [True]
+      main_channels: [3]
+      main_pretrained: [['G', 'G', 'R']]
+      side_pretrained: [['B', 'G']]
+      fusion_type: ['squeeze_excite']
+      use_asvf: [True]
+      asvf_nir_idx: [0]
+      asvf_red_idx: [2]
+      use_scsa: [True]
+
+  dataset:
+    root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]
+    tile: [False]
+    hor_flip: [True]
+    ver_flip: [True]
+    channels: [['CIR', 'B', 'RE']]
+    batch_size: [2]
+    val_batch_size: [1]
+    test_batch_size: [1]
+    num_workers: [0]
+    num_classes: [3]
+    return_path: [True]
+    size: [same]
+    crop_size: [same]
+
+  test_callbacks:
+    PerExampleMetricCallback:
+      phase: [TEST_BATCH_END]
+
+other_grids: []
