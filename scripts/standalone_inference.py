@@ -188,7 +188,8 @@ def load_checkpoint(ckpt_path: Path, model: torch.nn.Module, device: str = "cuda
 # Dataset
 # ────────────────────────────────────────────────────────────────────────────
 
-def build_test_loader(params: dict, dataset_root_override: str = None, batch_size: int = 2):
+def build_test_loader(params: dict, dataset_root_override: str = None, batch_size: int = 2,
+                       return_path: bool = False):
     """Build test DataLoader using the project's WeedsGaloreDatasetInterface."""
     from wd.data.weedsgalore import WeedsGaloreDatasetInterface
     from easydict import EasyDict
@@ -202,11 +203,84 @@ def build_test_loader(params: dict, dataset_root_override: str = None, batch_siz
     ds_params["batch_size"] = batch_size
     ds_params["val_batch_size"] = batch_size
     ds_params["test_batch_size"] = batch_size
+    if return_path:
+        ds_params["return_path"] = True
 
     interface = WeedsGaloreDatasetInterface(EasyDict(ds_params))
     # Force num_workers=0 to avoid Docker shared-memory issues with worker processes
     interface.build_data_loaders(batch_size_factor=1, num_workers=0)
-    return interface.test_loader
+    return interface.test_loader, interface
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Visualization (thesis-quality qualitative outputs)
+# ────────────────────────────────────────────────────────────────────────────
+
+# Palette matches Genze et al. paper convention: bg=dark gray, crop=green, weed=red
+VIZ_PALETTE = np.array([
+    [ 64,  64,  64],   # 0 background
+    [  0, 192,   0],   # 1 crop
+    [220,   0,   0],   # 2 weed
+], dtype=np.uint8)
+
+
+def save_mask_png(mask_np: np.ndarray, out_path: Path):
+    """(H,W) int mask → RGB PNG with VIZ_PALETTE."""
+    from PIL import Image
+    rgb = VIZ_PALETTE[mask_np.astype(np.int64)]
+    Image.fromarray(rgb).save(str(out_path))
+
+
+def save_rgb_png(rgb_np: np.ndarray, out_path: Path):
+    """(H,W,3) uint8 RGB → PNG."""
+    from PIL import Image
+    Image.fromarray(rgb_np).save(str(out_path))
+
+
+def extract_rgb_from_input(x: torch.Tensor, channels_spec, mean: list, std: list) -> np.ndarray:
+    """
+    Reconstruct an 8-bit RGB image from a normalized model input tensor.
+    Handles the expanded channel layout (CIR = [NIR, G, R]).
+    Returns (H, W, 3) uint8 numpy array.
+    """
+    # Build expanded channel name list to locate R, G, B indices
+    if isinstance(channels_spec, str):
+        if channels_spec == "CIR":
+            expanded = ["NIR", "G", "R"]
+        else:
+            expanded = [channels_spec]
+    else:
+        expanded = []
+        for c in channels_spec:
+            if c == "CIR":
+                expanded.extend(["NIR", "G", "R"])
+            else:
+                expanded.append(c)
+
+    def _find(name):
+        return expanded.index(name) if name in expanded else None
+
+    r_i, g_i, b_i = _find("R"), _find("G"), _find("B")
+    if r_i is None or g_i is None or b_i is None:
+        # Fallback: first 3 channels as pseudo-RGB
+        r_i, g_i, b_i = 0, min(1, x.shape[0] - 1), min(2, x.shape[0] - 1)
+
+    x_np = x.detach().cpu().numpy()  # (C, H, W)
+    mean_a = np.array(mean, dtype=np.float32)
+    std_a = np.array(std, dtype=np.float32)
+
+    def _denorm(ch_idx):
+        return x_np[ch_idx] * std_a[ch_idx] + mean_a[ch_idx]
+
+    r = _denorm(r_i); g = _denorm(g_i); b = _denorm(b_i)
+    rgb = np.stack([r, g, b], axis=-1)                     # (H, W, 3)
+    # Percentile stretch for visual clarity (matches paper qualitative style)
+    lo, hi = np.percentile(rgb, [2, 98])
+    if hi > lo:
+        rgb = np.clip((rgb - lo) / (hi - lo), 0.0, 1.0)
+    else:
+        rgb = np.clip(rgb, 0.0, 1.0)
+    return (rgb * 255.0).astype(np.uint8)
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -241,16 +315,30 @@ def predict_single(model, x, tta: bool = False):
     return (p_orig + p_h + p_v + p_hv) / 4.0
 
 
-def evaluate(model, loader, device, num_classes=3, tta=False):
-    """Aggregated CM-based metrics (matches paper convention)."""
+def evaluate(model, loader, device, num_classes=3, tta=False,
+             save_viz_dir: Path = None, viz_kinds=("pred",),
+             channels_spec=None, mean=None, std=None):
+    """Aggregated CM-based metrics (matches paper convention).
+
+    If save_viz_dir is set, per-sample PNGs are written using VIZ_PALETTE.
+    viz_kinds: subset of {"pred", "gt", "rgb"}.
+    """
     model.eval()
     cm = np.zeros((num_classes, num_classes), dtype=np.int64)
     n_images = 0
 
+    if save_viz_dir is not None:
+        save_viz_dir.mkdir(parents=True, exist_ok=True)
+
     for batch_idx, batch in enumerate(loader):
-        # batch can be (img, mask), (img, mask, path)
+        # batch can be (img, mask) or (img, mask, path_info_dict)
+        names = None
         if len(batch) == 3:
-            img, mask, _ = batch
+            img, mask, path_info = batch
+            if isinstance(path_info, dict) and "input_name" in path_info:
+                names = path_info["input_name"]
+                if isinstance(names, torch.Tensor):
+                    names = names.tolist()
         else:
             img, mask = batch
         img = img.to(device)
@@ -262,6 +350,24 @@ def evaluate(model, loader, device, num_classes=3, tta=False):
         for t in range(num_classes):
             for p in range(num_classes):
                 cm[t, p] += int(((mask == t) & (pred == p)).sum().item())
+
+        if save_viz_dir is not None:
+            for i in range(img.size(0)):
+                idx = n_images + i
+                if names is not None and i < len(names):
+                    stem = str(names[i])
+                else:
+                    stem = f"{idx:03d}"
+                pred_i = pred[i].cpu().numpy().astype(np.uint8)
+                mask_i = mask[i].cpu().numpy().astype(np.uint8)
+                if "pred" in viz_kinds:
+                    save_mask_png(pred_i, save_viz_dir / f"{stem}_pred.png")
+                if "gt" in viz_kinds:
+                    save_mask_png(mask_i, save_viz_dir / f"{stem}_gt.png")
+                if "rgb" in viz_kinds and channels_spec is not None:
+                    rgb_i = extract_rgb_from_input(img[i], channels_spec, mean, std)
+                    save_rgb_png(rgb_i, save_viz_dir / f"{stem}_rgb.png")
+
         n_images += img.size(0)
         if (batch_idx + 1) % 5 == 0:
             print(f"  batch {batch_idx + 1}/{len(loader)} processed")
@@ -310,6 +416,11 @@ def main():
     p.add_argument("--tta", action="store_true", help="Enable Test-Time Augmentation (h+v flip)")
     p.add_argument("--num-classes", type=int, default=3)
     p.add_argument("--class-names", nargs="+", default=["background", "crop", "weed"])
+    p.add_argument("--save-viz", type=Path, default=None,
+                   help="Directory to write per-sample PNGs (predictions, and optionally GT/RGB)")
+    p.add_argument("--viz-kinds", nargs="+", default=["pred", "gt", "rgb"],
+                   choices=["pred", "gt", "rgb"],
+                   help="Which outputs to save per sample when --save-viz is set")
     args = p.parse_args()
 
     if not args.ckpt.exists():
@@ -343,12 +454,26 @@ def main():
             print(f"[main] Loaded ckpt saved best_metric (acc): {raw_ckpt['acc']}")
 
     # 4. Build test loader
-    loader = build_test_loader(params, args.dataset_root, args.batch_size)
+    want_names = args.save_viz is not None
+    loader, interface = build_test_loader(
+        params, args.dataset_root, args.batch_size, return_path=want_names,
+    )
     print(f"[main] Test loader ready: {len(loader)} batches\n")
 
     # 5. Evaluate
     print(f"{'='*70}\nRunning inference{'  + TTA' if args.tta else ''}...\n{'='*70}")
-    cm, n_images = evaluate(model, loader, args.device, args.num_classes, args.tta)
+    if args.save_viz is not None:
+        print(f"[main] Saving viz to {args.save_viz} (kinds: {args.viz_kinds})")
+        # Grab mean/std from the dataset lib params for RGB de-normalization
+        mean = list(interface.lib_dataset_params["mean"]) if "rgb" in args.viz_kinds else None
+        std = list(interface.lib_dataset_params["std"]) if "rgb" in args.viz_kinds else None
+    else:
+        mean = std = None
+    cm, n_images = evaluate(
+        model, loader, args.device, args.num_classes, args.tta,
+        save_viz_dir=args.save_viz, viz_kinds=set(args.viz_kinds),
+        channels_spec=params["dataset"]["channels"], mean=mean, std=std,
+    )
     print(f"\n[main] Processed {n_images} test images")
 
     # 6. Metrics
