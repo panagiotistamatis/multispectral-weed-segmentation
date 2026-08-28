@@ -74,7 +74,7 @@ parameters:
       fusion_type: ['squeeze_excite']
 
   dataset:
-    root: ["<REDACTED_LOCAL_PATH>"]
+    root: ["./dataset/weedsgalore-dataset"]
     tile: [False]
     hor_flip: [True]
     ver_flip: [True]

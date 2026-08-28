@@ -72,7 +72,7 @@ parameters:
       side_pretrained: [null]
 
   dataset:
-    root: ["<REDACTED_LOCAL_PATH>"]
+    root: ["./dataset/weedsgalore-dataset"]
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'NIR', 'RE']]

@@ -39,7 +39,7 @@ parameters:
     freeze_pretrained: [False]
     # Resume from crashed run checkpoint (epoch ~71)
     resume: [True]
-    resume_path: ['<REDACTED_LOCAL_PATH>']
+    resume_path: ['<PATH_TO_CHECKPOINT>/ckpt_latest.pth']
 
   early_stopping:
     patience: [30]
@@ -75,7 +75,7 @@ parameters:
       side_pretrained: [null]
 
   dataset:
-    root: ["<REDACTED_LOCAL_PATH>"]
+    root: ["./dataset/weedsgalore-dataset"]
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'NIR', 'RE']]
