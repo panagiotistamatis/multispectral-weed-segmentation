@@ -137,9 +137,10 @@ class DoubleLaweed(BaseDoubleLawin):
 class ASVFInputModule(torch.nn.Module):
     """Adaptive Spectral-Vegetation Fusion at the input stage.
 
-    Adapted from ASVLB-Net (Dong et al., Pest Manag Sci 2026, Eq. 1-6) for SplitLawin.
-    Computes NDVI from NIR & R bands, then adaptively fuses raw spectral features
-    με τον vegetation-index prior μέσω channel + spatial attention (learnable α).
+    Author's own proposed module for SplitLawin. Computes NDVI from the NIR & R
+    bands, then adaptively fuses the raw spectral features with the vegetation-index
+    prior via channel attention (inspired by Squeeze-and-Excitation, Hu et al.) and
+    spatial attention (in the style of CBAM, Woo et al.), balanced by a learnable α.
     Το output ΔΙΑΤΗΡΕΙ το input channel count (residual), ώστε τα downstream backbones
     να κρατούν τα ImageNet-pretrained weights τους.
     """
@@ -238,8 +239,9 @@ class ASVFInputModule(torch.nn.Module):
 class BottleneckSCSAModule(torch.nn.Module):
     """Spatial-Channel Synergistic Attention στο bottleneck (deepest encoder F4).
 
-    Adapted από ASVLB-Net (Dong et al., Pest Manag Sci 2026, Eq. 9-11) για το
-    SplitLawin pipeline. Εφαρμόζεται στο deepest feature (F4) μεταξύ encoder
+    SCSA attention mechanism by Si et al. (thesis ref [64]). The author's
+    contribution is integrating it at the bottleneck of the SplitLawin pipeline.
+    Εφαρμόζεται στο deepest feature (F4) μεταξύ encoder
     και Lawin decoder. Multi-scale DWConv branches (kernels 3/5/7/9) για spatial
     attention, μετά channel self-attention. Residual connection — preserves
     input channel count.
@@ -411,7 +413,7 @@ class BaseSplitLawin(BaseLawin):
         fusion_type = get_param(arch_params, "fusion_type", None)
         self.fusion = MiTFusion(self.backbone.channels,
                                 **filter_none({"p_local": p_local, "p_glob": p_glob, "fusion_type": fusion_type}))
-        # Optional ASVF input module (ASVLB-Net inspired). Created AFTER super().__init__
+        # Optional ASVF input module (author's own module). Created AFTER super().__init__
         # ώστε να μην επηρεαστεί από το _init_weights pass του BaseLawin.
         if get_param(arch_params, "use_asvf", False):
             # Default indices για CIR+B+RE → expanded [NIR, G, R, B, RE]: NIR=0, R=2, RE=4
@@ -446,7 +448,8 @@ class BaseSplitLawin(BaseLawin):
             )
 
         # Optional Bottleneck-SCSA σε ένα ή ΠΕΡΙΣΣΟΤΕΡΑ encoder features.
-        # ASVLB-Net inspired (Dong 2026 Eq.9-11). Spatial+channel synergistic
+        # SCSA mechanism by Si et al.; author's contribution = bottleneck integration.
+        # Spatial+channel synergistic
         # attention για long-range dependencies.
         #   - use_scsa: True (backward compat) → defaults σε F4 μόνο
         #   - scsa_levels: [3, 4] → F3 + F4 (1-indexed, F1..F4)

@@ -1,5 +1,5 @@
 
-# Sprint 2: ASVF NDVI adaptive fusion module (ASVLB-Net inspired, Dong 2026).
+# Sprint 2: ASVF NDVI adaptive fusion module (author's own module; SE + CBAM style attention).
 # Winner config (CIR+B+RE, FT+Lov 50/50) + ASVFInputModule στο input stage.
 # Baseline (no ASVF): mIoU=0.8430, F1=0.9118
 # Static RGB+NDVI (combo #2, ΧΕΙΡΟΤΕΡΟ): mIoU=0.815

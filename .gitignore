@@ -4,8 +4,8 @@ dataset
 wandb
 checkpoints
 
-**/.pyc
-**/__pycache__
+*.pyc
+**/__pycache__/
 
 .vscode
 .idea
@@ -18,9 +18,15 @@ checkpoints
 .claude/worktrees/
 old_logs/worktrees/
 
-# Checkpoints (μεγάλα αρχεία)
+# Model weights / checkpoints (large binary files)
 *.pth
 *.ckpt
+*.pt
+
+# Editor / merge backup files
+*.backup
+*.bak
+*.orig
 
 # Experiment outputs
 outputs/
