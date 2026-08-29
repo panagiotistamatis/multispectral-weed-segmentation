@@ -1,36 +1,37 @@
 # Efficient Multispectral Crop–Weed Segmentation with Lightweight Vision Transformers
 
-Semantic segmentation of **crop vs. weed vs. background** in multispectral UAV imagery,
-built for **precision agriculture** — enabling site-specific weed control that cuts herbicide use.
+Pixel-level segmentation of crop, weed, and background in multispectral UAV imagery. The point is
+precision agriculture: if a model can separate weeds from the crop per pixel, a drone or tractor can
+spray only where it's needed instead of the whole field.
 
-This repository contains my **diploma thesis** work (Electrical & Computer Engineering,
-Democritus University of Thrace, 2026). It **extends** the LWViTs / SplitLawin architecture and
-applies it to the **WeedsGalore 2025** benchmark with two integrated attention modules, a new
-loss formulation, a spectral-channel strategy, and an extensive ablation study.
+This is the code from my diploma thesis (Electrical & Computer Engineering, Democritus University of
+Thrace, 2026). I started from the LWViTs / SplitLawin architecture and adapted it to the WeedsGalore
+2025 dataset, adding two attention modules, a different loss, and a spectral-channel strategy — then
+ran a fairly large ablation study to see what actually helped and what didn't.
 
-> **Built on prior work — full credit.** This project extends **LWViTs / SplitLawin**
-> (*Castellano et al., "Weed mapping in multispectral drone imagery using lightweight vision
-> transformers", Neurocomputing 2023*; reference implementation by
-> [@pasqualedem](https://github.com/pasqualedem/LWViTs-for-weedmapping), on the
-> [`ezdl`](https://github.com/pasqualedem/ezdl) framework). The base architecture and training
-> framework are their work. On top of that base, my thesis contributes two proposed modules
-> (**ASVF** and **Bottleneck-SCSA**), a new loss, a spectral-channel strategy, the WeedsGalore port,
-> and an extensive ablation study — all visible as the commit history on top of the original.
-> Honest attribution of the building blocks: the **SCSA** attention *mechanism* is due to
-> *Si et al.*; my contribution there is its bottleneck integration. The **ASVF** module is my own
-> design, using channel attention inspired by *Squeeze-and-Excitation* (Hu et al.) and spatial
-> attention in the style of *CBAM* (Woo et al.), guided by the NDVI vegetation index.
+> **Built on prior work.** This project extends LWViTs / SplitLawin (Castellano et al., "Weed mapping
+> in multispectral drone imagery using lightweight vision transformers", Neurocomputing 2023;
+> reference implementation by [@pasqualedem](https://github.com/pasqualedem/LWViTs-for-weedmapping),
+> on the [`ezdl`](https://github.com/pasqualedem/ezdl) framework) — the base architecture and training
+> framework are theirs. On top of that, my thesis adds two modules (ASVF and Bottleneck-SCSA), a new
+> loss, a spectral-channel strategy, the WeedsGalore port, and the ablation study, all in the commit
+> history. For the building blocks: the SCSA attention mechanism is from Si et al. (my part is
+> integrating it at the bottleneck); the ASVF module is my own, using channel attention along the
+> lines of Squeeze-and-Excitation (Hu et al.) and spatial attention like CBAM (Woo et al.), guided by
+> the NDVI index.
+
+![Qualitative results on the WeedsGalore test set: input (RGB), ground truth, and my model's prediction. Green = crop (maize), red = weed, dark = background.](assets/fig7_1_qualitative_embed0.png)
+
+*WeedsGalore test set — input, ground truth, and prediction (thesis Fig. 7.1).*
 
 ---
 
-## Why this matters
+## The problem
 
-Weeds reduce crop yield significantly. Instead of spraying an entire field uniformly, a model that
-segments *weeds* at the pixel level lets autonomous drones/tractors spray **only where needed** —
-less chemical use, lower cost, better yield. The core ML challenge is **extreme class imbalance** on
-**multispectral** (5-band) aerial imagery: in the WeedsGalore training pixels the split is roughly
-**~90 % background, ~7 % crop, ~3 % weed** — the weed class, the most important one, is by far the
-rarest.
+The hard part is class imbalance. In the WeedsGalore training pixels the split is roughly 90%
+background, 7% crop, 3% weed, so the weed class — the one that matters most — is also the rarest by a
+wide margin. The input is multispectral (5 bands) rather than plain RGB, which gives the model more
+signal to work with but also more ways to go wrong.
 
 **Dataset:** [WeedsGalore](https://github.com/GFZ/weedsgalore) (Celikkan et al., WACV 2025) —
 156 annotated 600×600 patches (104 train / 26 val / 26 test), 5 spectral bands (Blue, Green, Red,
@@ -81,11 +82,11 @@ Final comparison on the WeedsGalore test set (3-class), input 600×600. SplitLaw
 | DeepLabV3+ MSI (strongest published baseline) | 82.90 % | ~40M | 168.1 |
 | **SplitLawin (ours)** | **84.40 % ± 0.30** | **5.4M** | **33.9** |
 
-- **+1.50 percentage points mIoU** over the strongest published baseline (DeepLabV3+ MSI).
-- **~5× less compute** (33.9 vs 168.1 GFLOPs) and **~7× fewer parameters** (5.4M vs ~40M) —
-  suited to on-board UAV deployment.
-- **3-seed validation** (seeds 42/43/44) — mean mIoU 0.844 ± 0.003; all three seeds beat the
-  baseline, so the result is not a lucky run. *(Thesis Table 7.8.)*
+- +1.50 percentage points mIoU over the strongest published baseline (DeepLabV3+ MSI).
+- ~5× less compute (33.9 vs 168.1 GFLOPs) and ~7× fewer parameters (5.4M vs ~40M), which is what
+  matters for running on-board a UAV.
+- 3-seed validation (seeds 42/43/44): mean mIoU 0.844 ± 0.003, and all three seeds beat the baseline,
+  so it isn't a lucky run. *(Thesis Table 7.8.)*
 
 ### Per-class IoU (SplitLawin vs. DeepLabV3+ MSI, seed 42)
 
