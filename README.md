@@ -21,11 +21,6 @@ loss formulation, a spectral-channel strategy, and an extensive ablation study.
 > design, using channel attention inspired by *Squeeze-and-Excitation* (Hu et al.) and spatial
 > attention in the style of *CBAM* (Woo et al.), guided by the NDVI vegetation index.
 
-![Qualitative segmentation results on the WeedsGalore test set: input (RGB), ground truth, and SplitLawin prediction. Green = crop (maize), red = weed, dark = background.](assets/fig7_1_qualitative_embed0.png)
-
-*Qualitative results on the WeedsGalore test set (thesis Figure 7.1). Columns: input (RGB) · ground
-truth · SplitLawin (ours). Green = crop (maize), red = weed, dark = background.*
-
 ---
 
 ## Why this matters
@@ -116,10 +111,6 @@ numbers are claimed here.
 
 ## Architecture (overview)
 
-![SplitLawin architecture: 5-channel input, ASVF module, two-stream MiT-B0 encoder, SE fusion, Bottleneck-SCSA on F4, Lawin decoder, 3-class mask.](assets/fig6_1_architecture_embed0.png)
-
-*Proposed SplitLawin architecture (thesis Figure 6.1).*
-
 ```
 Multispectral input (5 bands)
         │
@@ -205,7 +196,7 @@ If you build on this, please also cite the base works:
 - Hu et al. **Squeeze-and-Excitation**, 2018 · Woo et al. **CBAM**, 2018 — *attention building blocks used in my ASVF module*
 - Abraham & Khan **Focal Tversky**, 2018 · Berman et al. **Lovász-Softmax**, CVPR 2018 — *losses*
 
-📄 **Thesis (full text):** <!-- [PLACEHOLDER] link to DUTH repository / PDF -->
+**Thesis (full text):** <!-- [PLACEHOLDER] link to DUTH repository / PDF -->
 
 ---
 

@@ -114,9 +114,9 @@ $$L_{\text{FT}} = (1 - \text{mean}_c(\text{TI}_c))^{1/\gamma}$$
 3. **Differentiable**: smooth gradients για σταθερό training
 
 **Δικιά μας tuning**: $\alpha = 0.4$, $\beta = 0.6$, $\gamma = 4/3$. Σύγκριση:
-- $\alpha=\beta=0.5$ (Dice): mIoU = 0.827 ❌
+- $\alpha=\beta=0.5$ (Dice): mIoU = 0.827 
 - $\alpha=0.3, \beta=0.7$ (paper default): mIoU = 0.833
-- **$\alpha=0.4, \beta=0.6$ (δικιά μας)**: **mIoU = 0.836** ✅
+- **$\alpha=0.4, \beta=0.6$ (δικιά μας)**: **mIoU = 0.836** 
 
 ### 3.4 Lovász-Softmax Loss (Berman et al., CVPR 2018)
 
@@ -215,8 +215,8 @@ Documenting τι ΔΕΝ δούλεψε είναι εξίσου σημαντικ�
 ### 6.1 WeedMap (Sa et al., 2018)
 
 Δοκιμάσαμε το winner config σε δεύτερο dataset:
-- **Rheinbach (RedEdge)**: F1 = 0.863 ✅ — matches paper baseline 0.857-0.865
-- **Eschikon (Sequoia)**: F1 = 0.505 ❌ — domain shift challenge
+- **Rheinbach (RedEdge)**: F1 = 0.863  — matches paper baseline 0.857-0.865
+- **Eschikon (Sequoia)**: F1 = 0.505  — domain shift challenge
 
 ### 6.2 Eschikon analysis
 
