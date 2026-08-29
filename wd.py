@@ -1,7 +1,7 @@
 import argparse
 import json
 
-# NumPy 2.0 compat shim για super-gradients (χρησιμοποιεί np.Inf/np.NaN που αφαιρέθηκαν)
+# NumPy 2.0 compat shim for super-gradients (it used np.Inf/np.NaN which were removed)
 import numpy as _np
 if not hasattr(_np, "Inf"):
     _np.Inf = _np.inf
@@ -53,9 +53,6 @@ def cli():
         settings['experiment'] = update_collection(settings['experiment'], args.run, key='start_from_run')
         settings['experiment'] = update_collection(settings['experiment'], track_dir, key='tracking_dir')
         experiment(settings)
-    elif action == 'crosstest':
-        from wd.crosstest import crosstest
-        crosstest()
     else:
         raise ValueError("Action not recognized")
 

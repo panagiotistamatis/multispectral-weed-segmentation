@@ -1,17 +1,17 @@
 
-# Phase B: Fine-tune του Best Combo με Focal Tversky + Lovasz combined loss.
-# Φορτώνει το ckpt_best του winner run (CIR+B+RE, α=0.4/β=0.6, mIoU=0.8408)
-# και συνεχίζει με 0.5·FT + 0.5·Lovasz, lower LR, για 100 epochs.
+# Phase B: Fine-tune the Best Combo with Focal Tversky + Lovasz combined loss.
+# Loads the ckpt_best of the winner run (CIR+B+RE, alpha=0.4/beta=0.6, mIoU=0.8408)
+# and continues with 0.5*FT + 0.5*Lovasz, lower LR, for 100 epochs.
 #
-# !! ΠΡΕΠΕΙ να συμπληρωθεί το resume_path με την πραγματική διαδρομή του ckpt !!
-# Στον orion: find ~/LWViTs-for-weedmapping/experiments -name "ckpt_best.pth" \
+# !! resume_path MUST be filled in with the real path to the ckpt !!
+# On orion: find ~/LWViTs-for-weedmapping/experiments -name "ckpt_best.pth" \
 #                  -path "*BestCombination*"
 
 
 experiment:
   name: weedmapping-weedsgalore
   group: FineTuneBestCombo-Lovasz
-  continue_with_errors: false  # full traceback αν crash
+  continue_with_errors: false  # full traceback if crash
   start_from_grid: 0
   start_from_run: 0
   tracking_dir: null
@@ -25,9 +25,9 @@ parameters:
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
 
   train_params:
-    # Fine-tuning: λίγα epochs με χαμηλό lr
+    # Fine-tuning: few epochs with a low lr
     max_epochs: [100]
-    initial_lr: [0.00001]   # 1e-5 (10x κάτω από original 1e-4)
+    initial_lr: [0.00001]   # 1e-5 (10x below the original 1e-4)
     optimizer: [Adam]
     optimizer_params:
       weight_decay: [0]
@@ -47,7 +47,7 @@ parameters:
     metric_to_watch: [loss]
     freeze_pretrained: [False]
     mixed_precision: [True]
-    # Resume από το Best Combo ckpt — !! ΣΥΜΠΛΗΡΩΣΕ το πραγματικό path !!
+    # Resume from the Best Combo ckpt -- !! FILL IN the real path !!
     resume: [True]
     ckpt_name: [ckpt_best.pth]
     resume_path: ["/workspace/experiments/weedmapping-weedsgalore/BestCombination-WeedsGalore/wandb/REPLACE_WITH_RUN_FOLDER/files/ckpt_best.pth"]
@@ -77,7 +77,7 @@ parameters:
           ['auc_weed', 2]
         ]]
 
-  # ΙΔΙΟ architecture με Best_CIR_B_RE_AB_04_06.yaml
+  # SAME architecture as Best_CIR_B_RE_AB_04_06.yaml
   model:
     name: [wd/models/splitlawin]
     params:

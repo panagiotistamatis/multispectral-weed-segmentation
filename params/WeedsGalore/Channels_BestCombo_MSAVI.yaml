@@ -1,6 +1,6 @@
 
-# Channel ablation: Best Combo (CIR+B+RE) augmented με MSAVI.
-# Channels: [CIR, B, RE, MSAVI] → expanded = [NIR, G, R, B, RE, MSAVI] = 6ch
+# Channel ablation: Best Combo (CIR+B+RE) augmented with MSAVI.
+# Channels: [CIR, B, RE, MSAVI] -> expanded = [NIR, G, R, B, RE, MSAVI] = 6ch
 # Main backbone (3ch): CIR composite [NIR, G, R]
 # Side backbone (3ch): [B, RE, MSAVI]
 

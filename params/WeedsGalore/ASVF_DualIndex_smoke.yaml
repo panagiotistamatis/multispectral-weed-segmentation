@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για Dual-index ASVF (NDVI + NDRE).
-# Επιβεβαιώνει: NDRE branch δεν crashάρει, β learnable τρέχει, dim alignment OK.
+# Smoke (1 epoch) for Dual-index ASVF (NDVI + NDRE).
+# Confirms: the NDRE branch does not crash, beta learnable runs, dim alignment OK.
 
 
 experiment:

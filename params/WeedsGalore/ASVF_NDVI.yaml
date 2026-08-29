@@ -1,11 +1,11 @@
 
 # Sprint 2: ASVF NDVI adaptive fusion module (author's own module; SE + CBAM style attention).
-# Winner config (CIR+B+RE, FT+Lov 50/50) + ASVFInputModule στο input stage.
+# Winner config (CIR+B+RE, FT+Lov 50/50) + ASVFInputModule at the input stage.
 # Baseline (no ASVF): mIoU=0.8430, F1=0.9118
-# Static RGB+NDVI (combo #2, ΧΕΙΡΟΤΕΡΟ): mIoU=0.815
-# Research Q: μήπως το ADAPTIVE NDVI fusion ξεκλειδώνει το vegetation signal;
+# Static RGB+NDVI (combo #2, WORSE): mIoU=0.815
+# Research Q: does ADAPTIVE NDVI fusion unlock the vegetation signal?
 #
-# NDVI υπολογίζεται από CIR-expanded channels [NIR,G,R,B,RE]: NIR@0, R@2.
+# NDVI is computed from CIR-expanded channels [NIR,G,R,B,RE]: NIR@0, R@2.
 
 
 experiment:
@@ -83,7 +83,7 @@ parameters:
       fusion_type: ['squeeze_excite']
       # ASVF input module
       use_asvf: [True]
-      asvf_nir_idx: [0]   # NIR position σε [NIR,G,R,B,RE]
+      asvf_nir_idx: [0]   # NIR position in [NIR,G,R,B,RE]
       asvf_red_idx: [2]   # R position
 
   dataset:

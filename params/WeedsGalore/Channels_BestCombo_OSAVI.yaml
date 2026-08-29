@@ -1,6 +1,6 @@
 
-# Channel ablation: Best Combo (CIR+B+RE) augmented με OSAVI.
-# Channels: [CIR, B, RE, OSAVI] → expanded = [NIR, G, R, B, RE, OSAVI] = 6ch
+# Channel ablation: Best Combo (CIR+B+RE) augmented with OSAVI.
+# Channels: [CIR, B, RE, OSAVI] -> expanded = [NIR, G, R, B, RE, OSAVI] = 6ch
 # Main backbone (3ch): CIR composite [NIR, G, R]
 # Side backbone (3ch): [B, RE, OSAVI]
 
@@ -76,7 +76,7 @@ parameters:
       backbone_pretrained: [True]
       main_channels: [3]
       main_pretrained: [['G', 'G', 'R']]      # CIR composite mapping
-      # 3 side channels: [B, RE, OSAVI] → B uses Blue, RE & OSAVI use G as approximation
+      # 3 side channels: [B, RE, OSAVI] -> B uses Blue, RE & OSAVI use G as approximation
       side_pretrained: [['B', 'G', 'G']]
       fusion_type: ['squeeze_excite']
 

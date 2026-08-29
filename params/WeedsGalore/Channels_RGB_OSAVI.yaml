@@ -1,7 +1,7 @@
 
 # Channel ablation: RGB + OSAVI (4 channels).
-# OSAVI = (NIR - R) / (NIR + R + 0.16) — soil-adjusted vegetation index.
-# Loss: Focal Tversky + Lovász (50/50, winner config).
+# OSAVI = (NIR - R) / (NIR + R + 0.16) -- soil-adjusted vegetation index.
+# Loss: Focal Tversky + Lovasz (50/50, winner config).
 
 
 experiment:

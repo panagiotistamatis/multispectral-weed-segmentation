@@ -1,13 +1,13 @@
 
-# Inference / Test-only run για το Focal Tversky winner checkpoint.
-# Φορτώνει pre-trained ckpt_best.pth και τρέχει ΜΟΝΟ test phase.
-# Σκοπός: επιβεβαίωση reproducibility (test metrics ίδια με αρχικό run).
+# Inference / Test-only run for the Focal Tversky winner checkpoint.
+# Loads pre-trained ckpt_best.pth and runs ONLY the test phase.
+# Purpose: confirm reproducibility (test metrics identical to the original run).
 
 
 experiment:
   name: weedmapping-weedsgalore
   group: Inference-FocalTversky
-  continue_with_errors: false  # Θέλουμε full traceback για debugging
+  continue_with_errors: false  # We want a full traceback for debugging
   start_from_grid: 0
   start_from_run: 0
   tracking_dir: null
@@ -17,7 +17,7 @@ experiment:
 
 parameters:
   tags: [[inference, focal_tversky, splitlawin_b0, weedsgalore]]
-  # ΜΟΝΟ test phase, χωρίς training
+  # ONLY test phase, no training
   phases: [[test]]
   dataset_interface: [wd/data/WeedsGaloreDatasetInterface]
 
@@ -40,7 +40,7 @@ parameters:
     metric_to_watch: [loss]
     freeze_pretrained: [False]
     mixed_precision: [True]
-    # Φόρτωση pre-trained checkpoint
+    # Load pre-trained checkpoint
     resume: [True]
     ckpt_name: [ckpt_best.pth]
     resume_path: ["/workspace/experiments/weedmapping-weedsgalore/LossVariants-WeedsGalore/wandb/run-20260427_095511-f0im4o25/files/ckpt_best.pth"]

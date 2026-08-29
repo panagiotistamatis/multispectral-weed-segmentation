@@ -1,6 +1,6 @@
 
-# Smoke test (1 epoch) για Focal+CE στον orion (1080 Ti, 11GB, batch=4).
-# Επιβεβαιώνει pipeline + δείχνει VRAM/χρόνο πριν τρέξουμε 500 epochs.
+# Smoke test (1 epoch) for Focal+CE on orion (1080 Ti, 11GB, batch=4).
+# Confirms the pipeline + shows VRAM/time before we run 500 epochs.
 
 
 experiment:

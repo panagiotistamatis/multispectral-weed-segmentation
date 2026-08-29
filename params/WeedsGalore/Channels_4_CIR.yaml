@@ -1,6 +1,6 @@
 
 # Channel ablation #4: CIR alone (3 channels = NIR,G,R composite).
-# Lawin (όχι Split) MiT-B0 | input=3 channels CIR με pretrained [G,G,R] (paper-style)
+# Lawin (not Split) MiT-B0 | input=3 channels CIR with pretrained [G,G,R] (paper-style)
 # Loss: Focal Tversky
 
 
@@ -65,7 +65,7 @@ parameters:
           ['auc_weed', 2]
         ]]
 
-  # ΣΗΜΕΙΩΣΗ: Lawin (όχι SplitLawin) γιατί CIR alone = 3 channels χωρίς "extra"
+  # NOTE: Lawin (not SplitLawin) because CIR alone = 3 channels without an "extra"
   model:
     name: [wd/models/lawin]
     params:

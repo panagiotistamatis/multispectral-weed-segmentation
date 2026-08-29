@@ -1,7 +1,7 @@
 
 # Channel ablation #2: RGB + NDVI (4 channels).
 # SplitLawin MiT-B0 | main=RGB (pretrained R,G,B) | side=NDVI (pretrained G) | SE | NoTile 608
-# Loss: Focal Tversky (winner από Stage 1)
+# Loss: Focal Tversky (winner from Stage 1)
 
 
 experiment:

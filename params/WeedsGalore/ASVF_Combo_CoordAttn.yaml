@@ -1,9 +1,9 @@
 
 # Sprint 2 combo: ASVF (input stage) + Coordinate Attention (fusion stage).
-# Δοκιμή αρχιτεκτονικής ορθογωνικότητας — τα 2 modules λειτουργούν σε διαφορετικά
-# στάδια, οπότε αν είναι complementary → +sum gain.
+# Testing architectural orthogonality -- the 2 modules operate at different
+# stages, so if they are complementary -> additive gain.
 # References: ASVF alone=0.8442, coord_attn alone=0.8369.
-# Πρόβλεψη ΑΝ ορθογώνια: ~0.846+
+# Prediction IF orthogonal: ~0.846+
 
 
 experiment:
@@ -78,8 +78,8 @@ parameters:
       main_channels: [3]
       main_pretrained: [['G', 'G', 'R']]
       side_pretrained: [['B', 'G']]
-      fusion_type: ['coord_attn']     # ⬅️ Coord Attention στο fusion stage
-      use_asvf: [True]                # ⬅️ ASVF στο input stage (NDVI only)
+      fusion_type: ['coord_attn']     # <-- Coord Attention at the fusion stage
+      use_asvf: [True]                # <-- ASVF at the input stage (NDVI only)
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
 

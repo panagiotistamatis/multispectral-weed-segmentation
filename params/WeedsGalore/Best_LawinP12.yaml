@@ -1,9 +1,9 @@
 
 # Sprint 6: Winner (ASVF + SCSA F4) + Lawin patch_size=12, ratios=[6,4,2].
 # Reference winner: mIoU=0.8469 (P=8, R=[8,4,2])
-# Hypothesis: μεγαλύτερα query patches (12² vs 8²) + larger contexts (72 max vs 64)
-# εκμεταλλεύεται το 608 input. Less queries (~169 vs 361) αλλά πιο πλούσιες.
-# Effective contexts: 12×{6,4,2} = 72, 48, 24 (πιο coarse pyramid).
+# Hypothesis: larger query patches (12^2 vs 8^2) + larger contexts (72 max vs 64)
+# exploit the 608 input. Fewer queries (~169 vs 361) but richer.
+# Effective contexts: 12x{6,4,2} = 72, 48, 24 (coarser pyramid).
 
 
 experiment:
@@ -85,7 +85,7 @@ parameters:
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
       use_scsa: [True]
-      # Lawin attention: P=8→12 (larger queries για 608 input), keep paper ratios
+      # Lawin attention: P=8->12 (larger queries for 608 input), keep paper ratios
       lawin_patch_size: [12]
       lawin_ratios: [[8, 4, 2]]
 
@@ -95,7 +95,7 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    # Smoke θα δείξει αν batch=4 χωράει. Conservative default batch=2.
+    # The smoke test will show if batch=4 fits. Conservative default batch=2.
     batch_size: [2]
     val_batch_size: [1]
     test_batch_size: [1]

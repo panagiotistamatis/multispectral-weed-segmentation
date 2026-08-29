@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για Sprint 2: ASVF NDVI adaptive fusion module.
-# Επιβεβαιώνει ότι το ASVFInputModule δεν crashάρει + NDVI computed σωστά.
+# Smoke (1 epoch) for Sprint 2: ASVF NDVI adaptive fusion module.
+# Confirms that the ASVFInputModule does not crash + NDVI computed correctly.
 
 
 experiment:

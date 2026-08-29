@@ -1,8 +1,8 @@
 
-# Multi-seed run #2: ASVF NDVI winner config με seed=43.
-# Identical to ASVF_NDVI.yaml ΜΟΝΟ το seed αλλάζει.
+# Multi-seed run #2: ASVF NDVI winner config with seed=43.
+# Identical to ASVF_NDVI.yaml, ONLY the seed changes.
 # Reference (seed=42): mIoU=0.8442, F1=0.9118
-# Σκοπός: στατιστική αξιοπιστία (3-seed mean ± std) για thesis defense.
+# Purpose: statistical reliability (3-seed mean +/- std) for the thesis defense.
 
 
 experiment:

@@ -1,6 +1,6 @@
 
-# Focal Tversky α/β ablation: α=0.6, β=0.4 (precision preference).
-# Penalizes FP more than FN — αντίθετο από paper recommendation.
+# Focal Tversky alpha/beta ablation: alpha=0.6, beta=0.4 (precision preference).
+# Penalizes FP more than FN -- opposite to the paper recommendation.
 
 
 experiment:

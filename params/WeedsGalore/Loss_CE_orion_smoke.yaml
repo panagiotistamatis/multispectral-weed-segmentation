@@ -1,5 +1,5 @@
 
-# Smoke test (1 epoch) για Cross Entropy μόνο στον orion (1080 Ti, 11GB, batch=4).
+# Smoke test (1 epoch) for Cross Entropy only on orion (1080 Ti, 11GB, batch=4).
 
 
 experiment:

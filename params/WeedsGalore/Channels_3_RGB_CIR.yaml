@@ -1,6 +1,6 @@
 
 # Channel ablation #3: RGB + CIR (6 channels = R,G,B + NIR,G,R composite).
-# SplitLawin MiT-B0 | main=RGB | side=CIR=[NIR,G,R] με pretrained [G,G,R] (paper-style)
+# SplitLawin MiT-B0 | main=RGB | side=CIR=[NIR,G,R] with pretrained [G,G,R] (paper-style)
 # Loss: Focal Tversky
 
 

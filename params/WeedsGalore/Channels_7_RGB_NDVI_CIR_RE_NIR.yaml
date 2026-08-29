@@ -1,10 +1,10 @@
 
 # Channel ablation #7: RGB + NDVI + CIR + RE + NIR (8 channels).
-# CIR expands σε [NIR,G,R], οπότε side = [NDVI, NIR, G, R, RE, NIR]... wait
-# Με την user-σειρά ['R','G','B','NDVI','CIR','RE','NIR']:
-# expanded → [R, G, B, NDVI, NIR, G, R, RE, NIR] = 9 raw positions
-# Αλλά εμείς θέλουμε 8 — οπότε το YAML λέει σαφώς:
-# channels = [R, G, B, NDVI, CIR, RE, NIR] → expanded = [R,G,B,NDVI,NIR,G,R,RE,NIR] = 9 ch
+# CIR expands to [NIR,G,R], so side = [NDVI, NIR, G, R, RE, NIR]... wait
+# With the user order ['R','G','B','NDVI','CIR','RE','NIR']:
+# expanded -> [R, G, B, NDVI, NIR, G, R, RE, NIR] = 9 raw positions
+# But we want 8 -- so the YAML states clearly:
+# channels = [R, G, B, NDVI, CIR, RE, NIR] -> expanded = [R,G,B,NDVI,NIR,G,R,RE,NIR] = 9 ch
 # Main=RGB (3), side=NDVI,NIR,G,R,RE,NIR (6), total=9
 # Loss: Focal Tversky
 
@@ -77,7 +77,7 @@ parameters:
       backbone_pretrained: [True]
       main_channels: [3]
       main_pretrained: [['R', 'G', 'B']]
-      # 6 side channels: [NDVI, NIR, G, R, RE, NIR] — pretrained mapping
+      # 6 side channels: [NDVI, NIR, G, R, RE, NIR] -- pretrained mapping
       side_pretrained: [['G', 'G', 'G', 'R', 'G', 'G']]
       fusion_type: ['squeeze_excite']
 
@@ -86,7 +86,7 @@ parameters:
     tile: [False]
     hor_flip: [True]
     ver_flip: [True]
-    # CIR expands σε [NIR,G,R] → εδώ είναι 9 channels συνολικά
+    # CIR expands to [NIR,G,R] -> here there are 9 channels in total
     channels: [['R', 'G', 'B', 'NDVI', 'CIR', 'RE', 'NIR']]
     batch_size: [4]
     val_batch_size: [2]

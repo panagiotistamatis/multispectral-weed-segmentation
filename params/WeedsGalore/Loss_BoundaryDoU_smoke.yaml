@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για το 3-way Boundary DoU combined loss.
-# Verify ότι το BoundaryDoULoss + 3-way combo δουλεύει χωρίς crash.
+# Smoke (1 epoch) for the 3-way Boundary DoU combined loss.
+# Verify that BoundaryDoULoss + the 3-way combo works without crashing.
 
 
 experiment:

@@ -41,9 +41,9 @@ parameters:
     greater_metric_to_watch_is_better: [False]
     metric_to_watch: [loss]
     freeze_pretrained: [False]
-    # mixed_precision: True για VRAM savings (~30%) σε 1080 Ti.
-    # Pascal δεν έχει Tensor Cores οπότε δεν περιμένουμε speedup, αλλά το FP16
-    # κατεβάζει peak VRAM από 10.9GB σε ~7.5GB — απαραίτητο για ασφαλές 5ωρο run.
+    # mixed_precision: True for VRAM savings (~30%) on the 1080 Ti.
+    # Pascal has no Tensor Cores so we don't expect a speedup, but FP16
+    # brings peak VRAM down from 10.9GB to ~7.5GB -- necessary for a safe 5-hour run.
     mixed_precision: [True]
 
   early_stopping:
@@ -57,7 +57,7 @@ parameters:
     iou: *metric_params       # per-class iou_0/1/2 + macro iou (=mIoU)
   test_metrics:
     iou: *metric_params       # per-class iou_0/1/2 + macro iou (=mIoU)
-    jaccard: *metric_params   # raw torchmetrics, ίδιο macro mIoU (κρατημένο για backward compat)
+    jaccard: *metric_params   # raw torchmetrics, same macro mIoU (kept for backward compat)
     conf_mat: *metric_params
     auc: *metric_params
     f1: *metric_params
@@ -87,7 +87,7 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['R', 'G', 'B', 'NIR', 'RE']]
-    # 1080 Ti 11GB → ξεκινάμε batch_size=4. Αν χωράει στο smoke-orion, σκαλώνουμε σε 6.
+    # 1080 Ti 11GB -> we start at batch_size=4. If it fits in smoke-orion, we scale to 6.
     batch_size: [4]
     val_batch_size: [2]
     test_batch_size: [2]

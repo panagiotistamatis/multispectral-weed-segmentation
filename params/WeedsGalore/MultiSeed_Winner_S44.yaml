@@ -1,5 +1,5 @@
 
-# Multi-seed run #2 του winner config.
+# Multi-seed run #2 of the winner config.
 # Identical config to original winner (seed=42, mIoU=0.8430), only seed differs.
 
 
@@ -34,7 +34,7 @@ parameters:
         ft_weight: [0.5]
         lov_weight: [0.5]
         lovasz_classes: ['present']
-    seed: [44]                          # ⬅️ ΑΛΛΑΓΗ από 42
+    seed: [44]                          # <-- CHANGE from 42
     zero_weight_decay_on_bias_and_bn: [True]
     average_best_models: [False]
     greater_metric_to_watch_is_better: [False]

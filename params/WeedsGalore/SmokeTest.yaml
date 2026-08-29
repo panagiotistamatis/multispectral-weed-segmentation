@@ -1,5 +1,5 @@
 
-# WeedsGalore — Smoke Test (2 epochs, all models)
+# WeedsGalore -- Smoke Test (2 epochs, all models)
 # Verifies: dataset loading, training, testing, WandB logging, checkpoints
 
 

@@ -1,7 +1,7 @@
 
-# Fusion ablation: Best Combo (CIR+B+RE) με Coordinate Attention αντί SE.
+# Fusion ablation: Best Combo (CIR+B+RE) with Coordinate Attention instead of SE.
 # Hou et al., CVPR 2021 (arXiv 2103.02907).
-# Same data, same loss, same channels, same pretrained mapping — μόνο fusion αλλάζει.
+# Same data, same loss, same channels, same pretrained mapping -- only the fusion changes.
 # Reference (SE, winner): F1=0.9118, mIoU=0.8430
 
 
@@ -75,10 +75,10 @@ parameters:
       backbone: [MiT-B0]
       backbone_pretrained: [True]
       main_channels: [3]
-      # ΙΔΙΟ mapping με winner — επιστρέφουμε σε G fallback (όχι I3D)
+      # SAME mapping as the winner -- we return to G fallback (not I3D)
       main_pretrained: [['G', 'G', 'R']]
       side_pretrained: [['B', 'G']]
-      fusion_type: ['coord_attn']           # ⬅️ ΑΛΛΑΓΗ: από squeeze_excite → coord_attn
+      fusion_type: ['coord_attn']           # <-- CHANGE: from squeeze_excite -> coord_attn
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

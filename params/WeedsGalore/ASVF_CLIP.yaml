@@ -1,12 +1,12 @@
 
 # Sprint 3: ASVF + CLIP guidance (Papadeas et al. inspired).
-# Winner config (CIR+B+RE, FT+Lov 50/50, ASVF) + CLIP cross-attention στον decoder.
+# Winner config (CIR+B+RE, FT+Lov 50/50, ASVF) + CLIP cross-attention in the decoder.
 # Reference: ASVF NDVI-only mIoU=0.8442, F1=0.9118
 # Hypothesis: CLIP-derived class semantics improve crop/weed disambiguation
-# (paper showed +0.62% mIoU με DINOv3, ειδικά σε rare/visually-similar pixels).
+# (the paper showed +0.62% mIoU with DINOv3, especially on rare/visually-similar pixels).
 #
 # Memory check: ASVF baseline gpu_mem=9.16GB. CLIP cross-attn adds ~100MB.
-# Expected ~9.3GB — within safe range for 1080 Ti.
+# Expected ~9.3GB -- within safe range for the 1080 Ti.
 
 
 experiment:

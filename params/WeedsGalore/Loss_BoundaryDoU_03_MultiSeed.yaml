@@ -1,10 +1,10 @@
 
-# Multi-seed verification του Boundary DoU peak (bdou_weight=0.3).
-# Seeds 43, 44 — έχουμε ήδη seed=42 → mIoU=0.8451 (driven-sunset-104).
-# Στόχος: επιβεβαίωση ότι το peak είναι σταθερό, όχι lucky single seed.
+# Multi-seed verification of the Boundary DoU peak (bdou_weight=0.3).
+# Seeds 43, 44 -- we already have seed=42 -> mIoU=0.8451 (driven-sunset-104).
+# Goal: confirm that the peak is stable, not a lucky single seed.
 #
-# Comparison target: Adam baseline (3-seed) mIoU = 0.839 ± 0.006
-# Για να είναι BDoU σαφώς καλύτερο: 3-seed mean > 0.845 (+1σ).
+# Comparison target: Adam baseline (3-seed) mIoU = 0.839 +/- 0.006
+# For BDoU to be clearly better: 3-seed mean > 0.845 (+1 sigma).
 
 
 experiment:
@@ -40,7 +40,7 @@ parameters:
         bdou_weight: [0.3]
         lovasz_classes: ['present']
         num_classes: [3]
-    # Grid sweep over seeds — δημιουργεί 2 runs (43, 44)
+    # Grid sweep over seeds -- creates 2 runs (43, 44)
     seed: [43, 44]
     zero_weight_decay_on_bias_and_bn: [True]
     average_best_models: [False]

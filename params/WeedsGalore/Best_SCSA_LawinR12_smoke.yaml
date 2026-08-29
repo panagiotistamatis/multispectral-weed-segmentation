@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για Sprint 5: winner + Lawin ratios [12, 4, 2].
-# Επιβεβαιώνει: dim alignment OK (cat=embed_dim*5 still), R=12 unfold δεν OOM.
+# Smoke (1 epoch) for Sprint 5: winner + Lawin ratios [12, 4, 2].
+# Confirms: dim alignment OK (cat=embed_dim*5 still), R=12 unfold does not OOM.
 
 
 experiment:
@@ -76,7 +76,7 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    # Smoke σε batch=2 για επιβεβαίωση memory με full pyramid [12,8,4,2]
+    # Smoke at batch=2 to confirm memory with the full pyramid [12,8,4,2]
     batch_size: [2]
     val_batch_size: [1]
     test_batch_size: [1]

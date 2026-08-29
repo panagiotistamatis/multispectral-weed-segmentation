@@ -1,6 +1,6 @@
 
-# Multi-seed run #3: ASVF NDVI winner config με seed=44.
-# Identical to ASVF_NDVI.yaml ΜΟΝΟ το seed αλλάζει.
+# Multi-seed run #3: ASVF NDVI winner config with seed=44.
+# Identical to ASVF_NDVI.yaml, ONLY the seed changes.
 # Reference (seed=42): mIoU=0.8442, F1=0.9118
 
 

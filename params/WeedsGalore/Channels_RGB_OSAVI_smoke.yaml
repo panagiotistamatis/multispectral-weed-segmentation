@@ -1,5 +1,5 @@
 
-# Smoke (1 epoch) για RGB+OSAVI — verify ότι OSAVI computation δουλεύει στο training pipeline.
+# Smoke (1 epoch) for RGB+OSAVI -- verify that OSAVI computation works in the training pipeline.
 
 
 experiment:
@@ -69,7 +69,7 @@ parameters:
     tile: [False]
     hor_flip: [True]
     ver_flip: [True]
-    # Testing both OSAVI and MSAVI together — verifies both compute paths
+    # Testing both OSAVI and MSAVI together -- verifies both compute paths
     channels: [['R', 'G', 'B', 'OSAVI', 'MSAVI']]
     batch_size: [4]
     val_batch_size: [2]

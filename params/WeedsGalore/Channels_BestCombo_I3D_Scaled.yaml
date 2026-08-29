@@ -1,12 +1,12 @@
 
-# I3D-scaled pretrained init για Best Combo (CIR+B+RE).
-# Side channels = [B, RE]. RE δεν υπάρχει στο ImageNet, οπότε αρχικοποιείται
-# από Red pretrained με scaling α=0.6 (I3D principle, διατηρεί activation magnitude).
-# B χρησιμοποιεί Blue pretrained χωρίς scaling (direct match).
+# I3D-scaled pretrained init for Best Combo (CIR+B+RE).
+# Side channels = [B, RE]. RE does not exist in ImageNet, so it is initialized
+# from Red pretrained with scaling alpha=0.6 (I3D principle, preserves activation magnitude).
+# B uses Blue pretrained without scaling (direct match).
 #
-# Main branch = CIR composite [NIR, G, R]. NIR ← G with 0.6 scaling, G+R as-is.
+# Main branch = CIR composite [NIR, G, R]. NIR <- G with 0.6 scaling, G+R as-is.
 #
-# Loss: Focal Tversky + Lovász (50/50, winner).
+# Loss: Focal Tversky + Lovasz (50/50, winner).
 # Reference Best Combo (G fallback, no scaling): mIoU=0.8430, F1=0.9118
 
 
@@ -81,11 +81,11 @@ parameters:
       backbone_pretrained: [True]
       main_channels: [3]
       # Main = CIR composite [NIR, G, R]
-      # NIR ← G with α=0.6, G ← G (1.0), R ← R (1.0)
+      # NIR <- G with alpha=0.6, G <- G (1.0), R <- R (1.0)
       main_pretrained: [['G', 'G', 'R']]
       main_pretrained_scales: [[0.6, 1.0, 1.0]]
       # Side = [B, RE]
-      # B ← B (direct, 1.0), RE ← R with α=0.6 (I3D scaling)
+      # B <- B (direct, 1.0), RE <- R with alpha=0.6 (I3D scaling)
       side_pretrained: [['B', 'R']]
       side_pretrained_scales: [[1.0, 0.6]]
       fusion_type: ['squeeze_excite']

@@ -1,7 +1,7 @@
 
-# Multi-seed run #1 του winner config.
+# Multi-seed run #1 of the winner config.
 # Identical config to original winner (seed=42, mIoU=0.8430), only seed differs.
-# Used για statistical reporting (mean ± std across seeds).
+# Used for statistical reporting (mean +/- std across seeds).
 
 
 experiment:
@@ -35,7 +35,7 @@ parameters:
         ft_weight: [0.5]
         lov_weight: [0.5]
         lovasz_classes: ['present']
-    seed: [43]                          # ⬅️ ΑΛΛΑΓΗ από 42
+    seed: [43]                          # <-- CHANGE from 42
     zero_weight_decay_on_bias_and_bn: [True]
     average_best_models: [False]
     greater_metric_to_watch_is_better: [False]

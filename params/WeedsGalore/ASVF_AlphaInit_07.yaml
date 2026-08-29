@@ -1,11 +1,11 @@
 
-# Sprint 2 tuning: ASVF με α_init=0.7 (biased toward main spectral features).
-# Σχηματικά Eq.5: M_s = σ(α·M_main + (1-α)·M_vegetation)
-#   α=0.5 (current best, mIoU=0.8442): balanced
-#   α=0.3 (run 3): vegetation-dominant (0.7 weight on NDVI)
-#   α=0.7 (this):   main-dominant (0.7 weight on main spectral, 0.3 on NDVI)
-# Hypothesis: αν main spectral features (CIR+B+RE) είναι ήδη πλούσια,
-# λιγότερη εξάρτηση από NDVI prior ίσως δουλέψει. α learnable — init ονλυ affects start.
+# Sprint 2 tuning: ASVF with alpha_init=0.7 (biased toward main spectral features).
+# Schematically Eq.5: M_s = sigmoid(alpha*M_main + (1-alpha)*M_vegetation)
+#   alpha=0.5 (current best, mIoU=0.8442): balanced
+#   alpha=0.3 (run 3): vegetation-dominant (0.7 weight on NDVI)
+#   alpha=0.7 (this):   main-dominant (0.7 weight on main spectral, 0.3 on NDVI)
+# Hypothesis: if the main spectral features (CIR+B+RE) are already rich,
+# less dependence on the NDVI prior might work. alpha is learnable -- init only affects the start.
 
 
 experiment:
@@ -84,7 +84,7 @@ parameters:
       use_asvf: [True]
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
-      asvf_alpha_init: [0.7]    # ⬅️ MORE main-spectral weight at init
+      asvf_alpha_init: [0.7]    # <-- MORE main-spectral weight at init
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

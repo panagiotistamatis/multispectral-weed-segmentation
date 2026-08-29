@@ -1,12 +1,12 @@
 
-# Sprint 2 tuning: ASVF με DUAL vegetation indices (NDVI + NDRE).
+# Sprint 2 tuning: ASVF with DUAL vegetation indices (NDVI + NDRE).
 # Winner config (CIR+B+RE, FT+Lov 50/50) + ASVF + NDRE branch.
 # Reference: ASVF NDVI-only mIoU=0.8442, F1=0.9118
-# Hypothesis: NDRE (chlorophyll-sensitive, από NIR-RE) complementary στο NDVI
-# (cover-sensitive, από NIR-R). Στο paper NDVI=86.5%, NDRE=85.95% INDIVIDUALLY —
-# dual δεν δοκιμάστηκε. Πιθανό novel finding για εμάς.
+# Hypothesis: NDRE (chlorophyll-sensitive, from NIR-RE) is complementary to NDVI
+# (cover-sensitive, from NIR-R). In the paper NDVI=86.5%, NDRE=85.95% INDIVIDUALLY --
+# dual was not tested. A possible novel finding for us.
 #
-# Channel layout CIR+B+RE → [NIR=0, G=1, R=2, B=3, RE=4]
+# Channel layout CIR+B+RE -> [NIR=0, G=1, R=2, B=3, RE=4]
 
 
 experiment:
@@ -82,11 +82,11 @@ parameters:
       main_pretrained: [['G', 'G', 'R']]
       side_pretrained: [['B', 'G']]
       fusion_type: ['squeeze_excite']
-      # ASVF με DUAL index (NDVI + NDRE)
+      # ASVF with DUAL index (NDVI + NDRE)
       use_asvf: [True]
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
-      asvf_use_ndre: [True]   # ⬅️ ΔΥΟ vegetation branches
+      asvf_use_ndre: [True]   # <-- TWO vegetation branches
       asvf_re_idx: [4]
       asvf_alpha_init: [0.5]
       asvf_beta_init: [0.5]   # NDVI/NDRE blend, learnable

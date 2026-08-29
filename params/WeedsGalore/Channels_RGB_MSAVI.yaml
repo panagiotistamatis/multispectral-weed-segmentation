@@ -1,7 +1,7 @@
 
 # Channel ablation: RGB + MSAVI (4 channels).
-# MSAVI = 0.5·(2·NIR+1 - √((2·NIR+1)² - 8·(NIR-R))) — self-calibrating SAVI.
-# Loss: Focal Tversky + Lovász (50/50, winner config).
+# MSAVI = 0.5*(2*NIR+1 - sqrt((2*NIR+1)^2 - 8*(NIR-R))) -- self-calibrating SAVI.
+# Loss: Focal Tversky + Lovasz (50/50, winner config).
 
 
 experiment:

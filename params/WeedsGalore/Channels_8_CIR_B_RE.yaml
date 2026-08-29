@@ -1,8 +1,8 @@
 
 # Channel ablation #8: CIR + B + RE (5 channels post-expansion).
-# CIR expands σε [NIR, G, R] → expanded list = [NIR, G, R, B, RE]
-# SplitLawin MiT-B0 | main=CIR=[NIR,G,R] με pretrained [G,G,R] | side=[B,RE] με pretrained G
-# Σκοπός: CIR ως κύριο feature (αντί RGB) + B/RE ως auxiliary spectral info.
+# CIR expands to [NIR, G, R] -> expanded list = [NIR, G, R, B, RE]
+# SplitLawin MiT-B0 | main=CIR=[NIR,G,R] with pretrained [G,G,R] | side=[B,RE] with pretrained G
+# Purpose: CIR as the main feature (instead of RGB) + B/RE as auxiliary spectral info.
 # Loss: Focal Tversky.
 
 
@@ -73,9 +73,9 @@ parameters:
       backbone: [MiT-B0]
       backbone_pretrained: [True]
       main_channels: [3]
-      # main = CIR composite [NIR,G,R] → pretrained mapping [G,G,R] (paper-style)
+      # main = CIR composite [NIR,G,R] -> pretrained mapping [G,G,R] (paper-style)
       main_pretrained: [['G', 'G', 'R']]
-      # side = [B, RE] → B χρησιμοποιεί Blue pretrained, RE χρησιμοποιεί G (όπως Combo 1)
+      # side = [B, RE] -> B uses Blue pretrained, RE uses G (as in Combo 1)
       side_pretrained: [['B', 'G']]
       fusion_type: ['squeeze_excite']
 

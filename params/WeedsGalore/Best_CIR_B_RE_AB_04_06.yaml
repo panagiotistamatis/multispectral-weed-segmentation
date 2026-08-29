@@ -1,9 +1,9 @@
 
-# DEFINITIVE WINNER candidate: Combo #8 (CIR+B+RE) με α/β tuned (0.4/0.6).
-# Συνδυασμός των δύο best findings:
+# DEFINITIVE WINNER candidate: Combo #8 (CIR+B+RE) with alpha/beta tuned (0.4/0.6).
+# Combination of the two best findings:
 #   - Combo #8: mIoU=0.8372 (CIR-as-main, B+RE side)
-#   - α/β=0.4/0.6: best variant στο α/β ablation
-# Πρόβλεψη: mIoU > 0.840
+#   - alpha/beta=0.4/0.6: best variant in the alpha/beta ablation
+# Prediction: mIoU > 0.840
 
 
 experiment:
@@ -73,9 +73,9 @@ parameters:
       backbone: [MiT-B0]
       backbone_pretrained: [True]
       main_channels: [3]
-      # main = CIR composite [NIR,G,R] → pretrained mapping [G,G,R]
+      # main = CIR composite [NIR,G,R] -> pretrained mapping [G,G,R]
       main_pretrained: [['G', 'G', 'R']]
-      # side = [B, RE] → B uses Blue weights, RE uses G
+      # side = [B, RE] -> B uses Blue weights, RE uses G
       side_pretrained: [['B', 'G']]
       fusion_type: ['squeeze_excite']
 

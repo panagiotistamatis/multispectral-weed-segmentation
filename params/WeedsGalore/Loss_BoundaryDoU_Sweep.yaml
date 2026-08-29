@@ -1,10 +1,10 @@
 
-# Final loss optimization: 3-way combined loss με Boundary DoU.
-# loss = 0.4·FocalTversky + 0.4·Lovász + w·BoundaryDoU
-# Grid sweep του w (bdou_weight) σε {0.1, 0.2, 0.3} → 3 runs.
+# Final loss optimization: 3-way combined loss with Boundary DoU.
+# loss = 0.4*FocalTversky + 0.4*Lovasz + w*BoundaryDoU
+# Grid sweep of w (bdou_weight) over {0.1, 0.2, 0.3} -> 3 runs.
 #
-# Base: winner config (CIR+B+RE, α=0.4/β=0.6, SE fusion, Adam).
-# Reference (FT+Lovász 50/50): mIoU=0.839±0.006, F1=0.909±0.004
+# Base: winner config (CIR+B+RE, alpha=0.4/beta=0.6, SE fusion, Adam).
+# Reference (FT+Lovasz 50/50): mIoU=0.839+/-0.006, F1=0.909+/-0.004
 
 
 experiment:
@@ -37,7 +37,7 @@ parameters:
         gamma: [1.3333]
         ft_weight: [0.4]
         lov_weight: [0.4]
-        # Grid sweep — δημιουργεί 3 runs
+        # Grid sweep -- creates 3 runs
         bdou_weight: [0.1, 0.2, 0.3]
         lovasz_classes: ['present']
         num_classes: [3]

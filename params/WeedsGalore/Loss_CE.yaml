@@ -1,8 +1,8 @@
 
-# Stage 3c: Cross Entropy μόνο (vanilla baseline για loss comparison).
+# Stage 3c: Cross Entropy only (vanilla baseline for loss comparison).
 # SplitLawin MiT-B0 | R,G,B,NIR,RE | main=RGB + side=NIR,RE | SE | NoTile 608
-# loss = weighted_CE(weights=[bg, crop, weed]) με label_smoothing για calibration.
-# Σκοπός: μετράμε πόσο βοηθούν Focal/Tversky vs ένα καθαρό weighted CE baseline.
+# loss = weighted_CE(weights=[bg, crop, weed]) with label_smoothing for calibration.
+# Purpose: measure how much Focal/Tversky help vs a plain weighted CE baseline.
 
 
 experiment:
@@ -30,10 +30,10 @@ parameters:
     loss:
       name: [cross_entropy]
       params:
-        # Class weights αντίστροφης συχνότητας (ίδιες με Focal+CE για fair σύγκριση):
-        # background~95%, crop~1%, weed~4% → high weight σε crop
+        # Inverse-frequency class weights (same as Focal+CE for a fair comparison):
+        # background~95%, crop~1%, weed~4% -> high weight on crop
         weight: [[0.0262, 1.0, 0.5818]]
-        # Label smoothing βοηθά calibration σε imbalanced segmentation
+        # Label smoothing helps calibration on imbalanced segmentation
         label_smoothing: [0.1]
     seed: [42]
     zero_weight_decay_on_bias_and_bn: [True]

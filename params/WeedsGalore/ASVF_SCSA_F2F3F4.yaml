@@ -1,9 +1,9 @@
 
-# Sprint 4 extension: ASVF + SCSA σε F2, F3 ΚΑΙ F4 (3-level bottleneck attention).
+# Sprint 4 extension: ASVF + SCSA at F2, F3 AND F4 (3-level bottleneck attention).
 # Reference: ASVF + SCSA F4-only = 0.8469 (current winner)
-# Aggressive multi-level: F2 (76×76, 64ch) + F3 (38×38, 160ch) + F4 (19×19, 256ch).
+# Aggressive multi-level: F2 (76x76, 64ch) + F3 (38x38, 160ch) + F4 (19x19, 256ch).
 # Memory: ~+350MB vs ASVF baseline (still safe ~9.5GB on 1080 Ti).
-# Risk: pole multi-scale attention μπορεί να oversaturate.
+# Risk: too much multi-scale attention may oversaturate.
 
 
 experiment:
@@ -82,7 +82,7 @@ parameters:
       use_asvf: [True]
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
-      scsa_levels: [[2, 3, 4]]   # ⬅️ SCSA σε F2 + F3 + F4 (1-indexed)
+      scsa_levels: [[2, 3, 4]]   # <-- SCSA at F2 + F3 + F4 (1-indexed)
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

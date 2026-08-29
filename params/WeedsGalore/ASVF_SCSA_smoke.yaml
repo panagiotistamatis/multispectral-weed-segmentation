@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για Sprint 4: ASVF + Bottleneck-SCSA.
-# Επιβεβαιώνει: SCSA module δεν crashάρει, dim alignment OK σε F4, memory εντός.
+# Smoke (1 epoch) for Sprint 4: ASVF + Bottleneck-SCSA.
+# Confirms: SCSA module does not crash, dim alignment OK at F4, memory within limits.
 
 
 experiment:

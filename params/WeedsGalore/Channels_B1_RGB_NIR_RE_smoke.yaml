@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για SplitLawin B1 + RGB+NIR+RE + Focal Tversky.
-# Μετράμε VRAM/χρόνο ανά epoch με B1 backbone.
+# Smoke (1 epoch) for SplitLawin B1 + RGB+NIR+RE + Focal Tversky.
+# We measure VRAM/time per epoch with the B1 backbone.
 
 
 experiment:
@@ -37,7 +37,7 @@ parameters:
     greater_metric_to_watch_is_better: [False]
     metric_to_watch: [loss]
     freeze_pretrained: [False]
-    # FP32 για B1 σε 1080 Ti — AMP scaler είχε προκαλέσει GPU is lost crashes
+    # FP32 for B1 on the 1080 Ti -- the AMP scaler had caused GPU is lost crashes
     mixed_precision: [False]
 
   early_stopping:

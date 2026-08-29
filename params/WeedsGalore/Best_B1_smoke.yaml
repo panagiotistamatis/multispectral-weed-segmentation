@@ -1,5 +1,5 @@
 
-# Smoke (1 epoch) για MiT-B1 winner config. Memory check (B1 σε batch=2 χωράει;)
+# Smoke (1 epoch) for the MiT-B1 winner config. Memory check (does B1 fit at batch=2?)
 
 
 experiment:

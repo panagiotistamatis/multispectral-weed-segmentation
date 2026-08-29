@@ -1,10 +1,10 @@
 
 # Sprint 5: Winner config (ASVF + SCSA F4) + Lawin FULL pyramid [12, 8, 4, 2].
-# Reference winner: mIoU=0.8469, F1≈0.913
-# Hypothesis: η αρχιτεκτονική Lawin σχεδιάστηκε για 256×256 input όπου R=8 κάλυπτε
-# 100% του feature map. Στο 608×608 (no-tile) μας, R=8 → 64×64 = 42% coverage.
-# Προσθήκη R=12 (96×96 = 63% coverage) ως EXTRA scale πάνω από τον original pyramid.
-# Με batch=2 χωράμε όλα τα 4 scales [12, 8, 4, 2] στο 1080 Ti.
+# Reference winner: mIoU=0.8469, F1~=0.913
+# Hypothesis: the Lawin architecture was designed for 256x256 input where R=8 covered
+# 100% of the feature map. At our 608x608 (no-tile), R=8 -> 64x64 = 42% coverage.
+# Adding R=12 (96x96 = 63% coverage) as an EXTRA scale on top of the original pyramid.
+# With batch=2 we fit all 4 scales [12, 8, 4, 2] on the 1080 Ti.
 
 
 experiment:
@@ -86,7 +86,7 @@ parameters:
       asvf_red_idx: [2]
       # SCSA F4 only (winner)
       use_scsa: [True]
-      # Full Lawin pyramid με R=12 scale extension για 608 input.
+      # Full Lawin pyramid with R=12 scale extension for 608 input.
       # [12, 8, 4, 2]: extra-large + large (paper) + medium + fine
       lawin_ratios: [[12, 8, 4, 2]]
 
@@ -96,7 +96,7 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    # batch=4 έδωσε gpu_mem=10.7GB (danger zone). Drop σε 2 για safe overnight.
+    # batch=4 gave gpu_mem=10.7GB (danger zone). Drop to 2 for a safe overnight run.
     batch_size: [2]
     val_batch_size: [1]
     test_batch_size: [1]

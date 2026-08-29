@@ -1,10 +1,10 @@
 
-# Extended sweep του Boundary DoU weight: {0.4, 0.5}.
-# Συνεχίζουμε το trend μετά τα {0.1: 0.822, 0.2: 0.830, 0.3: 0.845}.
-# Loss = 0.4·FocalTversky + 0.4·Lovász + w·BoundaryDoU
+# Extended sweep of the Boundary DoU weight: {0.4, 0.5}.
+# We continue the trend after {0.1: 0.822, 0.2: 0.830, 0.3: 0.845}.
+# Loss = 0.4*FocalTversky + 0.4*Lovasz + w*BoundaryDoU
 #
-# Πρόβλεψη: αν trend συνεχίζεται → 0.4 ≈ 0.850, 0.5 ≈ 0.855
-# Αν reverse → peak ήταν στο 0.3.
+# Prediction: if the trend continues -> 0.4 ~= 0.850, 0.5 ~= 0.855
+# If it reverses -> the peak was at 0.3.
 
 
 experiment:
@@ -37,7 +37,7 @@ parameters:
         gamma: [1.3333]
         ft_weight: [0.4]
         lov_weight: [0.4]
-        # Extended sweep — 2 runs (0.4, 0.5)
+        # Extended sweep -- 2 runs (0.4, 0.5)
         bdou_weight: [0.4, 0.5]
         lovasz_classes: ['present']
         num_classes: [3]

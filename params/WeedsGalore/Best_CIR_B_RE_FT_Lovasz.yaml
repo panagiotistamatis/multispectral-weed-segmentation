@@ -1,16 +1,16 @@
 
-# Phase Α v3: Best Combo + Combined Loss FT+Lovász (40/60 — Lovász dominant).
-# Train-from-scratch με 0.4*FocalTversky(α=0.4,β=0.6) + 0.6*LovászSoftmax.
-# Sequence: 70/30 → 0.8386, 50/50 → 0.84302 ↑↑, ψάχνουμε αν τάση συνεχίζει.
+# Phase A v3: Best Combo + Combined Loss FT+Lovasz (40/60 -- Lovasz dominant).
+# Train-from-scratch with 0.4*FocalTversky(alpha=0.4,beta=0.6) + 0.6*LovaszSoftmax.
+# Sequence: 70/30 -> 0.8386, 50/50 -> 0.84302 (up), checking if the trend continues.
 #
 # Reference (Best Combo, FT only): F1=0.9104, mIoU=0.8408
-# Goal: μέτρηση αν Lovász component βελτιώνει direct IoU optimization.
+# Goal: measure whether the Lovasz component improves direct IoU optimization.
 
 
 experiment:
   name: weedmapping-weedsgalore
   group: BestCombo-Lovasz-40-60
-  continue_with_errors: false  # full traceback αν crash
+  continue_with_errors: false  # full traceback if crash
   start_from_grid: 0
   start_from_run: 0
   tracking_dir: null
@@ -32,11 +32,11 @@ parameters:
     loss:
       name: [focal_tversky_lovasz]
       params:
-        # Focal Tversky parameters (best α/β από ablation)
+        # Focal Tversky parameters (best alpha/beta from ablation)
         alpha: [0.4]
         beta: [0.6]
         gamma: [1.3333]
-        # Combined weights — 40/60 (Lovász dominant — extrapolation από τάση 30%→50% Lovász)
+        # Combined weights -- 40/60 (Lovasz dominant -- extrapolation from the 30%->50% Lovasz trend)
         ft_weight: [0.4]
         lov_weight: [0.6]
         lovasz_classes: ['present']
@@ -73,7 +73,7 @@ parameters:
           ['auc_weed', 2]
         ]]
 
-  # ΙΔΙΟ architecture με Best_CIR_B_RE_AB_04_06.yaml (winner)
+  # SAME architecture as Best_CIR_B_RE_AB_04_06.yaml (winner)
   model:
     name: [wd/models/splitlawin]
     params:

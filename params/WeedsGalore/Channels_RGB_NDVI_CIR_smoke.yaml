@@ -1,5 +1,5 @@
 
-# Smoke test (1 epoch) για channel ablation: RGB_NDVI_CIR
+# Smoke test (1 epoch) for channel ablation: RGB_NDVI_CIR
 # main=RGB, side=NDVI+CIR (4ch) all G-pretrained - max spectral info
 
 

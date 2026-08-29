@@ -2,11 +2,11 @@
 WeedsGalore dataset integration for LWViTs.
 
 Key differences from WeedMap:
-- 16-bit PNGs (÷65535 for [0,1])
-- 600×600 images → 9 tiles (3×3, stride=172, size=256×256)
+- 16-bit PNGs (/65535 for [0,1])
+- 600x600 images -> 9 tiles (3x3, stride=172, size=256x256)
 - NDVI and CIR computed on-the-fly
 - Split-file based (train.txt / val.txt / test.txt)
-- Labels >2 collapsed to 2 (weed subclasses → single weed class)
+- Labels >2 collapsed to 2 (weed subclasses -> single weed class)
 """
 import itertools
 import os
@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 
 # ---------- Constants ----------
 TILE_SIZE = 256
-GRID_POSITIONS = [0, 172, 344]  # 3×3 grid, stride=172, last crop ends at 344+256=600
+GRID_POSITIONS = [0, 172, 344]  # 3x3 grid, stride=172, last crop ends at 344+256=600
 RAW_BANDS = ['R', 'G', 'B', 'NIR', 'RE']
 
 # No-tile mode: resize 600x600 -> FULL_IMAGE_SIZE (divisible by 32 for MiT)
@@ -78,12 +78,12 @@ class WeedsGaloreDatasetInterface(DatasetInterface):
         super().__init__(dataset_params)
         channels = dataset_params['channels']
 
-        # Tiling flag: default True (legacy 3×3 256 tiles); False = full 600→608 images
+        # Tiling flag: default True (legacy 3x3 256 tiles); False = full 600->608 images
         tile = core_utils.get_param(dataset_params, 'tile', default_val=True)
         self.tile = tile
 
         # Resolve how many actual tensor channels we have
-        # NOTE: 'CIR' counts as 3 channels (NIR, G, R composite) ακόμα και μέσα σε list
+        # NOTE: 'CIR' counts as 3 channels (NIR, G, R composite) even inside a list
         if channels == 'CIR':
             n_channels = 3
         elif isinstance(channels, str):
@@ -165,7 +165,7 @@ class WeedsGaloreDatasetInterface(DatasetInterface):
             )
             input_transform.append(input_resize)
             test_transform.append(input_resize)
-            # Label is (H, W) long; Resize expects (C, H, W) or PIL — wrap to add/remove channel dim
+            # Label is (H, W) long; Resize expects (C, H, W) or PIL -- wrap to add/remove channel dim
             target_transform.append(_ResizeLabel(FULL_IMAGE_SIZE))
             test_target_transform.append(_ResizeLabel(FULL_IMAGE_SIZE))
 
@@ -231,7 +231,7 @@ class WeedsGaloreDatasetInterface(DatasetInterface):
         if channels == 'CIR':
             channels = ['NIR', 'G', 'R']
         elif isinstance(channels, (list, tuple)):
-            # Expand 'CIR' tokens μέσα σε list (συμβατό με _get_image)
+            # Expand 'CIR' tokens inside the list (consistent with _get_image)
             expanded = []
             for c in channels:
                 if c == 'CIR':
@@ -341,7 +341,7 @@ def _scene_id_to_date(scene_id):
 # ---------- Dataset ----------
 class WeedsGaloreDataset(VisionDataset):
     """
-    WeedsGalore dataset with 3×3 tiling of 600×600 images into 256×256 crops.
+    WeedsGalore dataset with 3x3 tiling of 600x600 images into 256x256 crops.
 
     Index structure: list of (scene_id, row, col) tuples where
     row, col in {0, 1, 2} map to pixel offsets via GRID_POSITIONS.
@@ -371,8 +371,8 @@ class WeedsGaloreDataset(VisionDataset):
             self._load_channels = ['NIR', 'G', 'R']
             self._compute_ndvi = False
         elif isinstance(channels, list) or isinstance(channels, tuple):
-            # Expand 'CIR' tokens μέσα σε list → [NIR, G, R] composite.
-            # Π.χ. ['R','G','B','CIR'] → ['R','G','B','NIR','G','R'] (6 ch)
+            # Expand 'CIR' tokens inside the list -> [NIR, G, R] composite.
+            # E.g. ['R','G','B','CIR'] -> ['R','G','B','NIR','G','R'] (6 ch)
             expanded = []
             for c in channels:
                 if c == 'CIR':
@@ -385,7 +385,7 @@ class WeedsGaloreDataset(VisionDataset):
             self._compute_osavi = 'OSAVI' in expanded
             self._compute_msavi = 'MSAVI' in expanded
             self._compute_cir = False
-            self._channel_order = expanded  # use expanded list για stacking
+            self._channel_order = expanded  # use the expanded list for stacking
             self._load_channels = None
         else:
             raise ValueError(f"Unsupported channels spec: {channels}")
@@ -412,7 +412,7 @@ class WeedsGaloreDataset(VisionDataset):
     def build_index(cls, scene_ids, tile: bool = True):
         """
         Build dataset index.
-        - If tile=True: 9 tiles per scene (3×3 grid) -> (scene_id, row, col) tuples.
+        - If tile=True: 9 tiles per scene (3x3 grid) -> (scene_id, row, col) tuples.
         - If tile=False: 1 full image per scene -> (scene_id, None, None) tuples.
         """
         if not tile:
@@ -442,7 +442,7 @@ class WeedsGaloreDataset(VisionDataset):
         return torch.from_numpy(arr)  # shape: (H, W)
 
     def _crop_tile(self, tensor, row, col):
-        """Crop a 256×256 tile from the 3×3 grid position."""
+        """Crop a 256x256 tile from the 3x3 grid position."""
         y = GRID_POSITIONS[row]
         x = GRID_POSITIONS[col]
         return tensor[..., y:y + TILE_SIZE, x:x + TILE_SIZE]
@@ -471,19 +471,19 @@ class WeedsGaloreDataset(VisionDataset):
             red = band_data['R']
             band_data['NDVI'] = (nir - red) / (nir + red + 1e-10)
 
-        # Compute OSAVI: (NIR - R) / (NIR + R + 0.16) — soil-adjusted, reduces soil bias
+        # Compute OSAVI: (NIR - R) / (NIR + R + 0.16) -- soil-adjusted, reduces soil bias
         if self._compute_osavi:
             nir = band_data['NIR']
             red = band_data['R']
             band_data['OSAVI'] = (nir - red) / (nir + red + 0.16)
 
-        # Compute MSAVI: 0.5 · (2·NIR + 1 - √((2·NIR + 1)² - 8·(NIR - R)))
-        # Self-calibrating SAVI, καλύτερο σε bare soil scenarios.
+        # Compute MSAVI: 0.5 * (2*NIR + 1 - sqrt((2*NIR + 1)^2 - 8*(NIR - R)))
+        # Self-calibrating SAVI, better in bare soil scenarios.
         if self._compute_msavi:
             nir = band_data['NIR']
             red = band_data['R']
             inner = (2.0 * nir + 1.0) ** 2 - 8.0 * (nir - red)
-            # Clamp για numerical stability (rare edge case όπου το inner γίνεται <0)
+            # Clamp for numerical stability (rare edge case where inner becomes <0)
             inner = torch.clamp(inner, min=0.0)
             band_data['MSAVI'] = 0.5 * (2.0 * nir + 1.0 - torch.sqrt(inner))
 
@@ -504,7 +504,7 @@ class WeedsGaloreDataset(VisionDataset):
             label = self._crop_tile(label, row, col)   # (256, 256)
             sample_name = f"{scene_id}_{row}_{col}"
         else:
-            # Full-image mode: keep 600×600; transforms will resize to FULL_IMAGE_SIZE
+            # Full-image mode: keep 600x600; transforms will resize to FULL_IMAGE_SIZE
             sample_name = scene_id
 
         # Apply transforms

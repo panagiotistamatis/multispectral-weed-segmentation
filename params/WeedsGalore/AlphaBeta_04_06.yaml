@@ -1,6 +1,6 @@
 
-# Focal Tversky α/β ablation: α=0.4, β=0.6 (mild recall preference).
-# Λιγότερο aggressive από paper recommendation (0.3/0.7).
+# Focal Tversky alpha/beta ablation: alpha=0.4, beta=0.6 (mild recall preference).
+# Less aggressive than the paper recommendation (0.3/0.7).
 
 
 experiment:

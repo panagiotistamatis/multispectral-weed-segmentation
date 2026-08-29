@@ -1,11 +1,11 @@
 
-# Sprint 7: Winner config (ASVF + SCSA F4) με MiT-B1 backbone αντί B0.
-# Reference (B0 winner): mIoU=0.8469, F1≈0.913, 5.4M params
-# Hypothesis: B1 (~14M backbone vs 3.7M σε B0) προσφέρει πιο πλούσιες representations.
-# Earlier B1 attempts crashed σε batch=4 με GPU loss. Batch=2 πιο safe.
+# Sprint 7: Winner config (ASVF + SCSA F4) with MiT-B1 backbone instead of B0.
+# Reference (B0 winner): mIoU=0.8469, F1~=0.913, 5.4M params
+# Hypothesis: B1 (~14M backbone vs 3.7M in B0) offers richer representations.
+# Earlier B1 attempts crashed at batch=4 with GPU loss. Batch=2 is safer.
 #
-# Memory concern: B1 backbone deeper → SCSA στο F4 θα έχει 512 channels (vs 256 σε B0).
-# Embed dim στον LawinHead = 512 για B1 (vs 256 σε B0).
+# Memory concern: B1 backbone is deeper -> SCSA at F4 will have 512 channels (vs 256 in B0).
+# Embed dim in the LawinHead = 512 for B1 (vs 256 in B0).
 
 
 experiment:
@@ -75,7 +75,7 @@ parameters:
   model:
     name: [wd/models/splitlawin]
     params:
-      backbone: [MiT-B1]            # ⬅️ Upgrade B0 → B1
+      backbone: [MiT-B1]            # <-- Upgrade B0 -> B1
       backbone_pretrained: [True]
       main_channels: [3]
       main_pretrained: [['G', 'G', 'R']]
@@ -93,7 +93,7 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    # B1 βαρύτερο → batch=2 για safe memory (B1 σε batch=4 είχε GPU lost crashes)
+    # B1 is heavier -> batch=2 for safe memory (B1 at batch=4 had GPU lost crashes)
     batch_size: [2]
     val_batch_size: [1]
     test_batch_size: [1]

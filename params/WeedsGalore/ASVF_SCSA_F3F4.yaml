@@ -1,8 +1,8 @@
 
-# Sprint 4 extension: ASVF + SCSA σε F3 ΚΑΙ F4 (multi-level bottleneck attention).
+# Sprint 4 extension: ASVF + SCSA at F3 AND F4 (multi-level bottleneck attention).
 # Reference: ASVF + SCSA F4-only = 0.8469 (current winner)
-# Hypothesis: SCSA σε F3 (38×38 spatial, 160 ch) προσθέτει mid-scale long-range
-# context που είναι complementary με το F4 deep context.
+# Hypothesis: SCSA at F3 (38x38 spatial, 160 ch) adds mid-scale long-range
+# context that is complementary to the F4 deep context.
 
 
 experiment:
@@ -81,7 +81,7 @@ parameters:
       use_asvf: [True]
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
-      scsa_levels: [[3, 4]]   # ⬅️ SCSA σε F3 ΚΑΙ F4 (1-indexed)
+      scsa_levels: [[3, 4]]   # <-- SCSA at F3 AND F4 (1-indexed)
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

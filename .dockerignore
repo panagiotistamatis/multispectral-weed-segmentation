@@ -15,7 +15,7 @@ lightvenv/
 .idea/
 .claude/
 
-# Datasets (huge — bind-mount αντί να μπουν μέσα στο image)
+# Datasets (huge -- bind-mount instead of baking them into the image)
 dataset/
 datasets/
 **/weedsgalore-dataset/

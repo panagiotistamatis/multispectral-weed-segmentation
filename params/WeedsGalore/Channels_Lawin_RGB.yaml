@@ -1,6 +1,6 @@
 
-# RGB-only baseline: Lawin (όχι Split — δεν υπάρχει "extra" channel) + Focal Tversky.
-# Σκοπός: άμεση σύγκριση με DeepLabV3+ RGB του paper (mIoU=0.793).
+# RGB-only baseline: Lawin (not Split -- there is no "extra" channel) + Focal Tversky.
+# Purpose: direct comparison with the paper's DeepLabV3+ RGB (mIoU=0.793).
 
 
 experiment:
@@ -64,7 +64,7 @@ parameters:
           ['auc_weed', 2]
         ]]
 
-  # Lawin (single backbone) — RGB-only έχει 3 channels, δεν χρειάζεται split
+  # Lawin (single backbone) -- RGB-only has 3 channels, no split needed
   model:
     name: [wd/models/lawin]
     params:

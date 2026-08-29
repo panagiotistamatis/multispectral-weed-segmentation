@@ -73,7 +73,7 @@ parameters:
           ['auc_weed', 2]
         ]]
 
-  # Same architecture as the winner — ONLY fusion_type changes to 'gated'.
+  # Same architecture as the winner -- ONLY fusion_type changes to 'gated'.
   model:
     name: [wd/models/splitlawin]
     params:

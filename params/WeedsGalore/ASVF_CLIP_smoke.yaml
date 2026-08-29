@@ -1,7 +1,7 @@
 
-# Smoke (1 epoch) για Sprint 3: ASVF + CLIP cross-attention.
-# Επιβεβαιώνει: CLIP loading OK, cross-attention forward OK, memory εντός ορίων.
-# CRITICAL: senior gate — αν memory issues ή instability → abort.
+# Smoke (1 epoch) for Sprint 3: ASVF + CLIP cross-attention.
+# Confirms: CLIP loading OK, cross-attention forward OK, memory within limits.
+# CRITICAL: senior gate -- if memory issues or instability -> abort.
 
 
 experiment:

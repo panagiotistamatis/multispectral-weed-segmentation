@@ -1,13 +1,13 @@
 # ============================================================
-# LWViTs-for-weedmapping — Frozen requirements
+# LWViTs-for-weedmapping -- Frozen requirements
 # Exported from working PyCharm env (pip freeze)
 # Filtered: removed Windows-only, PyTorch (separate install),
 #           ezdl (git install), GUI packages, build tools
 # ============================================================
 
 # --- Core ML & Deep Learning ---
-# NOTE: super-gradients is installed separately with --no-deps στο Dockerfile
-# (pins onnxruntime==1.13.1 which conflicts με 1.23.2 — deps καλύπτονται εδώ)
+# NOTE: super-gradients is installed separately with --no-deps in the Dockerfile
+# (pins onnxruntime==1.13.1 which conflicts with 1.23.2 -- deps are covered here)
 torchmetrics==0.8.0
 torchdistill==1.1.4
 transformers==5.3.0
@@ -16,7 +16,7 @@ pip-tools==7.5.3
 
 # --- ONNX ---
 onnx==1.20.1
-# onnxruntime==1.24.3 δεν υπάρχει για Linux — χρησιμοποιούμε τη τελευταία
+# onnxruntime==1.24.3 does not exist for Linux -- we use the latest available
 onnxruntime==1.23.2
 onnx-simplifier==0.5.0
 onnxsim==0.6.2
@@ -147,7 +147,7 @@ boto3==1.42.68
 botocore==1.42.68
 s3transfer==0.16.0
 jmespath==1.1.0
-# PDF libs removed — not needed for training, reportlab needs libfreetype
+# PDF libs removed -- not needed for training, reportlab needs libfreetype
 # pdfminer.six, pdfplumber, pypdf, pypdfium2
 pycryptodome==3.23.0
 pyOpenSSL==25.1.0

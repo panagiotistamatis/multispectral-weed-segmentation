@@ -1,6 +1,6 @@
 
-# Smoke (1 epoch) για multi-level SCSA (F2+F3+F4, πιο επιθετικό).
-# Επιβεβαιώνει: ModuleList multi-level forward, dim alignment, memory ~9.5GB.
+# Smoke (1 epoch) for multi-level SCSA (F2+F3+F4, more aggressive).
+# Confirms: ModuleList multi-level forward, dim alignment, memory ~9.5GB.
 
 
 experiment:

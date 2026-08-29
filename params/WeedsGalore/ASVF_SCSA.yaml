@@ -1,10 +1,10 @@
 
-# Sprint 4 (LAST experiment): ASVF + Bottleneck-SCSA στο F4 (deepest encoder feature).
-# Winner config (CIR+B+RE, FT+Lov 50/50, ASVF NDVI) + SCSA module πριν decoder.
+# Sprint 4 (LAST experiment): ASVF + Bottleneck-SCSA at F4 (deepest encoder feature).
+# Winner config (CIR+B+RE, FT+Lov 50/50, ASVF NDVI) + SCSA module before the decoder.
 # Reference: ASVF baseline mIoU=0.8442, F1=0.9118
-# SCSA mechanism (Si et al.): Bottleneck-SCSA έδωσε +1.85% mIoU στη δική τους
-# UNet architecture. Στο δικό μας Lawin decoder υπάρχει ήδη internal attention →
-# πιθανή redundancy. Senior probability of success: ~30%.
+# SCSA mechanism (Si et al.): Bottleneck-SCSA gave +1.85% mIoU in their own
+# UNet architecture. In our Lawin decoder there is already internal attention ->
+# possible redundancy. Senior probability of success: ~30%.
 
 
 experiment:
@@ -85,7 +85,7 @@ parameters:
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
       asvf_alpha_init: [0.5]
-      # Bottleneck-SCSA στο F4 (deepest encoder feature)
+      # Bottleneck-SCSA at F4 (deepest encoder feature)
       use_scsa: [True]
 
   dataset:

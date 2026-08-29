@@ -24,9 +24,9 @@ class BaseLawin(BaseModel):
         pretrained_channels = get_param(arch_params, "main_pretrained", None)
         super().__init__(backbone, input_channels, backbone_pretrained)
         # Optional configurable Lawin attention ratios + patch_size.
-        # Default behavior: ratios=[8,4,2], patch_size=8 (paper-original, 256×256 input).
-        # Για 608×608: π.χ. lawin_ratios=[12,4,2] ή patch_size=12 με ratios=[6,4,2].
-        # Conditional pass — μόνο LawinHead δέχεται τα κλειδιά (LaweedHead δεν).
+        # Default behavior: ratios=[8,4,2], patch_size=8 (paper-original, 256x256 input).
+        # For 608x608: e.g. lawin_ratios=[12,4,2] or patch_size=12 with ratios=[6,4,2].
+        # Conditional pass -- only LawinHead accepts these keys (LaweedHead does not).
         lawin_ratios = get_param(arch_params, "lawin_ratios", None)
         lawin_patch_size = get_param(arch_params, "lawin_patch_size", None)
         head_extra = {}
@@ -47,7 +47,7 @@ class BaseLawin(BaseModel):
                 self.main_pretrained = [pretrained_channels] * input_channels
             else:
                 self.main_pretrained = pretrained_channels
-            # Optional per-channel scaling (I3D-style: NIR/RE ← 0.6·RGB pretrained)
+            # Optional per-channel scaling (I3D-style: NIR/RE <- 0.6*RGB pretrained)
             main_scales = get_param(arch_params, "main_pretrained_scales", None)
             self.backbone.init_pretrained_weights(
                 channels_to_load=self.main_pretrained,
@@ -101,7 +101,7 @@ class BaseDoubleLawin(BaseLawin):
         if self.side_pretrained is not None:
             if isinstance(self.side_pretrained, str):
                 self.side_pretrained = [self.side_pretrained] * self.side_channels
-            # Optional I3D-style per-channel scaling για side branch
+            # Optional I3D-style per-channel scaling for the side branch
             _side_scales = get_param(arch_params, "side_pretrained_scales", None)
             self.side_backbone.init_pretrained_weights(
                 channels_to_load=self.side_pretrained,
@@ -140,9 +140,9 @@ class ASVFInputModule(torch.nn.Module):
     Author's own proposed module for SplitLawin. Computes NDVI from the NIR & R
     bands, then adaptively fuses the raw spectral features with the vegetation-index
     prior via channel attention (inspired by Squeeze-and-Excitation, Hu et al.) and
-    spatial attention (in the style of CBAM, Woo et al.), balanced by a learnable α.
-    Το output ΔΙΑΤΗΡΕΙ το input channel count (residual), ώστε τα downstream backbones
-    να κρατούν τα ImageNet-pretrained weights τους.
+    spatial attention (in the style of CBAM, Woo et al.), balanced by a learnable alpha.
+    The output PRESERVES the input channel count (residual), so the downstream backbones
+    keep their ImageNet-pretrained weights.
     """
     def __init__(self, in_channels: int, nir_idx: int, red_idx: int,
                  main_dim: int = 32, veg_dim: int = 16,
@@ -151,12 +151,12 @@ class ASVFInputModule(torch.nn.Module):
                  beta_init: float = 0.5):
         """
         Args:
-            nir_idx, red_idx: input channel positions για NDVI = (NIR-R)/(NIR+R)
-            main_dim, veg_dim: feature dims για main + each vegetation branch
-            alpha_init: learnable α initial value (main vs vegetation spatial blend, Eq.5)
-            use_ndre: αν True, προστίθεται 2η vegetation branch με NDRE = (NIR-RE)/(NIR+RE)
-            re_idx: input channel position για RE (required αν use_ndre=True)
-            beta_init: learnable β initial value (NDVI vs NDRE blend, μόνο αν use_ndre)
+            nir_idx, red_idx: input channel positions for NDVI = (NIR-R)/(NIR+R)
+            main_dim, veg_dim: feature dims for main + each vegetation branch
+            alpha_init: learnable alpha initial value (main vs vegetation spatial blend, Eq.5)
+            use_ndre: if True, adds a 2nd vegetation branch with NDRE = (NIR-RE)/(NIR+RE)
+            re_idx: input channel position for RE (required if use_ndre=True)
+            beta_init: learnable beta initial value (NDVI vs NDRE blend, only if use_ndre)
         """
         super().__init__()
         self.nir_idx = nir_idx
@@ -167,16 +167,16 @@ class ASVFInputModule(torch.nn.Module):
             raise ValueError("use_ndre=True requires re_idx")
         # Main spectral branch (preliminary encoding, Eq. 1-context)
         self.main_conv = torch.nn.Conv2d(in_channels, main_dim, 3, padding=1)
-        # Vegetation branch: NDVI → conv1x1 (Eq. 2)
+        # Vegetation branch: NDVI -> conv1x1 (Eq. 2)
         self.ndvi_conv = torch.nn.Conv2d(1, veg_dim, 1)
-        # Optional NDRE branch — complementary chlorophyll-sensitive index
+        # Optional NDRE branch -- complementary chlorophyll-sensitive index
         cat_dim = main_dim + veg_dim
         if use_ndre:
             self.ndre_conv = torch.nn.Conv2d(1, veg_dim, 1)
             self.ndre_sp = torch.nn.Conv2d(veg_dim, 1, 1)
             self.beta = torch.nn.Parameter(torch.tensor(float(beta_init)))
             cat_dim += veg_dim
-        # Channel attention (Eq. 3-4): GAP → conv-relu-conv → sigmoid
+        # Channel attention (Eq. 3-4): GAP -> conv-relu-conv -> sigmoid
         self.ca = torch.nn.Sequential(
             torch.nn.AdaptiveAvgPool2d(1),
             torch.nn.Conv2d(cat_dim, max(cat_dim // 4, 1), 1),
@@ -184,23 +184,23 @@ class ASVFInputModule(torch.nn.Module):
             torch.nn.Conv2d(max(cat_dim // 4, 1), cat_dim, 1),
             torch.nn.Sigmoid(),
         )
-        # Spatial attention (Eq. 5): per-branch 1x1 → learnable α blend → sigmoid
+        # Spatial attention (Eq. 5): per-branch 1x1 -> learnable alpha blend -> sigmoid
         self.main_sp = torch.nn.Conv2d(main_dim, 1, 1)
         self.ndvi_sp = torch.nn.Conv2d(veg_dim, 1, 1)
         self.alpha = torch.nn.Parameter(torch.tensor(float(alpha_init)))
-        # Project back σε input channel count + residual (Eq. 6)
+        # Project back to input channel count + residual (Eq. 6)
         self.proj = torch.nn.Conv2d(cat_dim, in_channels, 1)
 
     @staticmethod
     def _normalized_diff(band_a: Tensor, band_b: Tensor) -> Tensor:
-        """Compute (a-b)/(a+b), clamp σε [-1,1] → re-normalize σε [0,1].
-        Computed in FP32 για AMP numerical stability (FP16 ε=1e-6 underflows)."""
+        """Compute (a-b)/(a+b), clamp to [-1,1] -> re-normalize to [0,1].
+        Computed in FP32 for AMP numerical stability (FP16 epsilon=1e-6 underflows)."""
         denom = (band_a + band_b).clamp(min=1e-3)
         ndi = (band_a - band_b) / denom
         return ((ndi + 1.0) * 0.5).clamp(0.0, 1.0)
 
     def forward(self, x: Tensor) -> Tensor:
-        # NDVI/NDRE υπολογίζονται σε FP32 για numerical stability υπό mixed precision (AMP).
+        # NDVI/NDRE are computed in FP32 for numerical stability under mixed precision (AMP).
         x32 = x.float()
         nir = x32[:, self.nir_idx:self.nir_idx + 1]
         red = x32[:, self.red_idx:self.red_idx + 1]
@@ -220,12 +220,12 @@ class ASVFInputModule(torch.nn.Module):
         # channel attention over all branches (Eq. 3-4)
         f_c = f_cat * self.ca(f_cat)
 
-        # Spatial attention (Eq. 5 — extended για dual-index)
+        # Spatial attention (Eq. 5 -- extended for dual-index)
         m_main = self.main_sp(f_main)
         m_ndvi = self.ndvi_sp(f_ndvi)
         if self.use_ndre:
-            # Two-level blend: first combine NDVI+NDRE με learnable β,
-            # μετά combine main vs combined-vegetation με α.
+            # Two-level blend: first combine NDVI+NDRE with learnable beta,
+            # then combine main vs combined-vegetation with alpha.
             m_ndre = self.ndre_sp(f_ndre)
             m_veg = self.beta * m_ndvi + (1.0 - self.beta) * m_ndre
         else:
@@ -237,26 +237,26 @@ class ASVFInputModule(torch.nn.Module):
 
 
 class BottleneckSCSAModule(torch.nn.Module):
-    """Spatial-Channel Synergistic Attention στο bottleneck (deepest encoder F4).
+    """Spatial-Channel Synergistic Attention at the bottleneck (deepest encoder F4).
 
     SCSA attention mechanism by Si et al. (thesis ref [64]). The author's
     contribution is integrating it at the bottleneck of the SplitLawin pipeline.
-    Εφαρμόζεται στο deepest feature (F4) μεταξύ encoder
-    και Lawin decoder. Multi-scale DWConv branches (kernels 3/5/7/9) για spatial
-    attention, μετά channel self-attention. Residual connection — preserves
+    Applied to the deepest feature (F4) between the encoder
+    and the Lawin decoder. Multi-scale DWConv branches (kernels 3/5/7/9) for spatial
+    attention, then channel self-attention. Residual connection -- preserves
     input channel count.
     """
     def __init__(self, channels: int):
         super().__init__()
         compressed = max(channels // 2, 4)
-        # Compress (Eq. 9): Conv-BN-ReLU 2C → C concept
+        # Compress (Eq. 9): Conv-BN-ReLU 2C -> C concept
         self.compress = torch.nn.Sequential(
             torch.nn.Conv2d(channels, compressed, 1, bias=False),
             torch.nn.BatchNorm2d(compressed),
             torch.nn.ReLU(inplace=True),
         )
-        # Split σε 4 groups + multi-scale DWConv για spatial attention map W
-        # Uneven split αν compressed % 4 != 0 — τελευταίο group παίρνει το remainder
+        # Split into 4 groups + multi-scale DWConv for spatial attention map W
+        # Uneven split if compressed % 4 != 0 -- last group takes the remainder
         c_split = compressed // 4
         c_rem = compressed - 3 * c_split
         self.split_sizes = [c_split, c_split, c_split, c_rem]
@@ -264,7 +264,7 @@ class BottleneckSCSAModule(torch.nn.Module):
         self.dw5 = torch.nn.Conv2d(c_split, c_split, 5, padding=2, groups=c_split)
         self.dw7 = torch.nn.Conv2d(c_split, c_split, 7, padding=3, groups=c_split)
         self.dw9 = torch.nn.Conv2d(c_rem, c_rem, 9, padding=4, groups=c_rem)
-        # Channel attention (Eq. 10): GAP → bottleneck conv → sigmoid
+        # Channel attention (Eq. 10): GAP -> bottleneck conv -> sigmoid
         ca_hidden = max(compressed // 4, 1)
         self.ca = torch.nn.Sequential(
             torch.nn.AdaptiveAvgPool2d(1),
@@ -273,7 +273,7 @@ class BottleneckSCSAModule(torch.nn.Module):
             torch.nn.Conv2d(ca_hidden, compressed, 1),
             torch.nn.Sigmoid(),
         )
-        # Restore (Eq. 11): C → 2C concept (compressed → channels) + residual
+        # Restore (Eq. 11): C -> 2C concept (compressed -> channels) + residual
         self.restore = torch.nn.Sequential(
             torch.nn.Conv2d(compressed, channels, 1, bias=False),
             torch.nn.BatchNorm2d(channels),
@@ -282,7 +282,7 @@ class BottleneckSCSAModule(torch.nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         f_conv = self.compress(x)  # [B, compressed, H, W]
-        # Multi-scale DWConv για spatial attention W (Eq. 10 context)
+        # Multi-scale DWConv for spatial attention W (Eq. 10 context)
         groups = torch.split(f_conv, self.split_sizes, dim=1)
         sp = torch.cat([
             self.dw3(groups[0]),
@@ -298,16 +298,16 @@ class BottleneckSCSAModule(torch.nn.Module):
 
 
 class CLIPCrossAttentionModule(torch.nn.Module):
-    """CLIP-guided cross-attention για semantic decoder enhancement.
+    """CLIP-guided cross-attention for semantic decoder enhancement.
 
-    Adapted από Papadeas et al. (CLIP Meets DINOv3, Eq. 11-17) στην αρχιτεκτονική
-    SplitLawin+Lawin decoder. Εφαρμόζεται στα 256-channel decoder features ΠΡΙΝ
-    το final 1×1 classification conv. Cross-attention μεταξύ visual queries και
-    frozen CLIP text embeddings από class-specific prompts.
+    Adapted from Papadeas et al. (CLIP Meets DINOv3, Eq. 11-17) to the
+    SplitLawin+Lawin decoder architecture. Applied to the 256-channel decoder features BEFORE
+    the final 1x1 classification conv. Cross-attention between visual queries and
+    frozen CLIP text embeddings from class-specific prompts.
 
-    Memory-efficient: φορτώνει CLIP text encoder ΜΟΝΟ at init για να υπολογίσει
-    τα raw text embeddings, μετά τα cache-άρει ως buffer + discards το CLIP model.
-    Στο training cost είναι ~0 (text embeddings constant ~6KB + lightweight attn).
+    Memory-efficient: loads the CLIP text encoder ONLY at init to compute
+    the raw text embeddings, then caches them as a buffer + discards the CLIP model.
+    The training cost is ~0 (text embeddings constant ~6KB + lightweight attn).
     """
     def __init__(self, prompts, feat_dim: int = 256, text_dim: int = 512,
                  clip_model: str = "openai/clip-vit-base-patch16"):
@@ -317,7 +317,7 @@ class CLIPCrossAttentionModule(torch.nn.Module):
             from transformers import CLIPTokenizer, CLIPTextModel
         except ImportError as e:
             raise ImportError(
-                "transformers package required για CLIPCrossAttentionModule"
+                "transformers package required for CLIPCrossAttentionModule"
             ) from e
 
         tokenizer = CLIPTokenizer.from_pretrained(clip_model)
@@ -328,17 +328,17 @@ class CLIPCrossAttentionModule(torch.nn.Module):
             text_outputs = text_model(**tokens)
             # pooler_output: [num_prompts, text_dim] (EOS-token representation)
             T_raw = text_outputs.pooler_output.detach().clone()
-            # L2-normalize ώστε όλα τα prompts να έχουν unit magnitude — αποφεύγει
-            # large-scale CLIP magnitudes που θα κυριαρχούσαν στο residual addition.
+            # L2-normalize so all prompts have unit magnitude -- avoids
+            # large-scale CLIP magnitudes that would dominate the residual addition.
             T_raw = torch.nn.functional.normalize(T_raw, dim=-1)
-        # Free CLIP (~63M params) — δεν χρειάζονται πια
+        # Free CLIP (~63M params) -- no longer needed
         del tokenizer, text_model, text_outputs, tokens
 
-        # Cache normalized CLIP embeddings ως buffer
+        # Cache normalized CLIP embeddings as a buffer
         self.register_buffer("text_embeds", T_raw, persistent=True)
         self.num_classes = T_raw.shape[0]
 
-        # Trainable text projection (Eq. 11): 512 → 256 with LayerNorm + ReLU
+        # Trainable text projection (Eq. 11): 512 -> 256 with LayerNorm + ReLU
         self.text_proj = torch.nn.Sequential(
             torch.nn.Linear(text_dim, feat_dim),
             torch.nn.LayerNorm(feat_dim),
@@ -351,19 +351,19 @@ class CLIPCrossAttentionModule(torch.nn.Module):
         self.v_proj = torch.nn.Linear(feat_dim, feat_dim)
         self.scale = feat_dim ** -0.5
 
-        # ZERO-INIT του v_proj (ControlNet-style): αρχικά attended=0 → output=x,
-        # ώστε το CLIP module να αρχίζει σαν no-op και να εισάγεται σταδιακά
-        # μέσω learning. Αποφεύγει class collapse από random init στα early epochs.
+        # ZERO-INIT of v_proj (ControlNet-style): initially attended=0 -> output=x,
+        # so the CLIP module starts as a no-op and is introduced gradually
+        # through learning. Avoids class collapse from random init in the early epochs.
         torch.nn.init.zeros_(self.v_proj.weight)
         torch.nn.init.zeros_(self.v_proj.bias)
 
     def forward(self, x: Tensor) -> Tensor:
-        """x: [B, C=256, H, W] visual features → enhanced via CLIP guidance.
+        """x: [B, C=256, H, W] visual features -> enhanced via CLIP guidance.
         Residual connection (Eq. 17): out = x + attended."""
         B, C, H, W = x.shape
 
         # Project text embeddings (Eq. 11): [num_classes, feat_dim]
-        # Cast σε x.dtype για AMP compatibility
+        # Cast to x.dtype for AMP compatibility
         T_prime = self.text_proj(self.text_embeds.to(x.dtype))
 
         # Q from visual features (Eq. 12): [B, HW, C]
@@ -376,7 +376,7 @@ class CLIPCrossAttentionModule(torch.nn.Module):
         # Cross-attention (Eq. 15): [B, HW, num_classes]
         attn = torch.softmax(torch.matmul(q, k.transpose(-2, -1)) * self.scale, dim=-1)
 
-        # Attended features (Eq. 16): [B, HW, C] → [B, C, H, W]
+        # Attended features (Eq. 16): [B, HW, C] -> [B, C, H, W]
         attended = torch.matmul(attn, v).transpose(1, 2).reshape(B, C, H, W)
 
         # Residual (Eq. 17)
@@ -392,7 +392,7 @@ class BaseSplitLawin(BaseLawin):
         self.side_channels = arch_params['input_channels'] - main_channels
         self.side_pretrained = get_param(arch_params, "side_pretrained", None)
         self.main_channels = main_channels
-        # Total input channels (πριν το overwrite στη γραμμή που ακολουθεί)
+        # Total input channels (before the overwrite on the following line)
         _total_input_channels = arch_params['input_channels']
         arch_params['input_channels'] = arch_params['main_channels']
         super().__init__(arch_params, lawin_class)
@@ -402,7 +402,7 @@ class BaseSplitLawin(BaseLawin):
         if self.side_pretrained is not None:
             if isinstance(self.side_pretrained, str):
                 self.side_pretrained = [self.side_pretrained] * self.side_channels
-            # Optional I3D-style per-channel scaling για side branch
+            # Optional I3D-style per-channel scaling for the side branch
             _side_scales = get_param(arch_params, "side_pretrained_scales", None)
             self.side_backbone.init_pretrained_weights(
                 channels_to_load=self.side_pretrained,
@@ -414,9 +414,9 @@ class BaseSplitLawin(BaseLawin):
         self.fusion = MiTFusion(self.backbone.channels,
                                 **filter_none({"p_local": p_local, "p_glob": p_glob, "fusion_type": fusion_type}))
         # Optional ASVF input module (author's own module). Created AFTER super().__init__
-        # ώστε να μην επηρεαστεί από το _init_weights pass του BaseLawin.
+        # so it is not affected by the _init_weights pass of BaseLawin.
         if get_param(arch_params, "use_asvf", False):
-            # Default indices για CIR+B+RE → expanded [NIR, G, R, B, RE]: NIR=0, R=2, RE=4
+            # Default indices for CIR+B+RE -> expanded [NIR, G, R, B, RE]: NIR=0, R=2, RE=4
             self.asvf = ASVFInputModule(
                 in_channels=_total_input_channels,
                 nir_idx=get_param(arch_params, "asvf_nir_idx", 0),
@@ -431,15 +431,15 @@ class BaseSplitLawin(BaseLawin):
         else:
             self.asvf = None
 
-        # Optional CLIP cross-attention στο decoder (Papadeas et al. inspired).
-        # Φορτώνει frozen CLIP text encoder, encodes τα class prompts μία φορά,
-        # μετά cache + discard. Inject στο LawinHead.clip_module.
+        # Optional CLIP cross-attention in the decoder (Papadeas et al. inspired).
+        # Loads a frozen CLIP text encoder, encodes the class prompts once,
+        # then cache + discard. Inject into LawinHead.clip_module.
         if get_param(arch_params, "use_clip", False):
             prompts = get_param(
                 arch_params, "clip_prompts",
                 ["background soil", "crop plant leaf", "weed plant"],
             )
-            # Decoder embed_dim είναι 256 για B0 backbones (line ~26 του BaseLawin)
+            # Decoder embed_dim is 256 for B0 backbones (line ~26 of BaseLawin)
             feat_dim = 256 if 'B0' in get_param(arch_params, "backbone", 'MiT-B0') else 512
             self.decode_head.clip_module = CLIPCrossAttentionModule(
                 prompts=prompts,
@@ -447,18 +447,18 @@ class BaseSplitLawin(BaseLawin):
                 clip_model=get_param(arch_params, "clip_model", "openai/clip-vit-base-patch16"),
             )
 
-        # Optional Bottleneck-SCSA σε ένα ή ΠΕΡΙΣΣΟΤΕΡΑ encoder features.
+        # Optional Bottleneck-SCSA on one or MORE encoder features.
         # SCSA mechanism by Si et al.; author's contribution = bottleneck integration.
         # Spatial+channel synergistic
-        # attention για long-range dependencies.
-        #   - use_scsa: True (backward compat) → defaults σε F4 μόνο
-        #   - scsa_levels: [3, 4] → F3 + F4 (1-indexed, F1..F4)
-        #   - scsa_levels: [2, 3, 4] → F2 + F3 + F4
+        # attention for long-range dependencies.
+        #   - use_scsa: True (backward compat) -> defaults to F4 only
+        #   - scsa_levels: [3, 4] -> F3 + F4 (1-indexed, F1..F4)
+        #   - scsa_levels: [2, 3, 4] -> F2 + F3 + F4
         scsa_levels = get_param(arch_params, "scsa_levels", None)
         if scsa_levels is None and get_param(arch_params, "use_scsa", False):
             scsa_levels = [4]
         if scsa_levels:
-            # 1-indexed (F1=1..F4=4) → 0-indexed (feat[0]..feat[3])
+            # 1-indexed (F1=1..F4=4) -> 0-indexed (feat[0]..feat[3])
             self.scsa_indices = [lvl - 1 for lvl in scsa_levels]
             self.scsa_modules = torch.nn.ModuleList([
                 BottleneckSCSAModule(self.backbone.channels[i])
@@ -477,7 +477,7 @@ class BaseSplitLawin(BaseLawin):
         first_feat_main = self.backbone.partial_forward(main_channels, slice(0, 1))
         first_feat = self.fusion((first_feat_main, first_feat_side))[0]
         feat = (first_feat,) + self.backbone.partial_forward(first_feat, slice(1, 4))
-        # Optional Bottleneck-SCSA σε ένα ή περισσότερα encoder levels πριν decoder
+        # Optional Bottleneck-SCSA on one or more encoder levels before the decoder
         if self.scsa_modules is not None:
             feat = list(feat)
             for mod, idx in zip(self.scsa_modules, self.scsa_indices):

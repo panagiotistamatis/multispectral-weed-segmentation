@@ -1,6 +1,6 @@
 
-# Smoke test (1 epoch) για Focal Tversky στον orion (1080 Ti, 11GB).
-# Σκοπός: μετράμε VRAM σε batch=4, χρόνο/epoch, και επιβεβαιώνουμε pipeline.
+# Smoke test (1 epoch) for Focal Tversky on orion (1080 Ti, 11GB).
+# Purpose: measure VRAM at batch=4, time/epoch, and confirm the pipeline.
 
 
 experiment:
@@ -37,7 +37,7 @@ parameters:
     greater_metric_to_watch_is_better: [False]
     metric_to_watch: [loss]
     freeze_pretrained: [False]
-    # FP32 για 1080 Ti (Pascal, no Tensor Cores)
+    # FP32 for the 1080 Ti (Pascal, no Tensor Cores)
     mixed_precision: [False]
 
   early_stopping:

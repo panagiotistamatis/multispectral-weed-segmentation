@@ -1,5 +1,5 @@
 
-# Focal Tversky α/β ablation: α=β=0.5 (equivalent to soft Dice loss).
+# Focal Tversky alpha/beta ablation: alpha=beta=0.5 (equivalent to soft Dice loss).
 # Base config: winner combo (RGB+NIR+RE, SplitLawin B0).
 
 

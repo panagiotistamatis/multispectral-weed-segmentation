@@ -1,11 +1,11 @@
 
-# Sprint 2 tuning: ASVF με α_init=0.3 (biased toward vegetation prior).
-# Σχηματικά Eq.5: M_s = σ(α·M_main + (1-α)·M_vegetation)
-#   α=0.5 (current best, mIoU=0.8442): balanced
-#   α=0.3 (this): vegetation-dominant (0.7 weight on NDVI signal)
-#   α=0.7 (future): main-dominant
-# Hypothesis: crop ωφελήθηκε +8.8pp από NDVI prior, ίσως περισσότερη vegetation
-# επιρροή βοηθήσει κι άλλο. α είναι learnable — init μόνο affects starting point.
+# Sprint 2 tuning: ASVF with alpha_init=0.3 (biased toward vegetation prior).
+# Schematically Eq.5: M_s = sigmoid(alpha*M_main + (1-alpha)*M_vegetation)
+#   alpha=0.5 (current best, mIoU=0.8442): balanced
+#   alpha=0.3 (this): vegetation-dominant (0.7 weight on NDVI signal)
+#   alpha=0.7 (future): main-dominant
+# Hypothesis: crop benefited +8.8pp from the NDVI prior, so perhaps more vegetation
+# influence helps further. alpha is learnable -- init only affects the starting point.
 
 
 experiment:
@@ -84,7 +84,7 @@ parameters:
       use_asvf: [True]
       asvf_nir_idx: [0]
       asvf_red_idx: [2]
-      asvf_alpha_init: [0.3]    # ⬅️ MORE vegetation weight at init
+      asvf_alpha_init: [0.3]    # <-- MORE vegetation weight at init
 
   dataset:
     root: ["/workspace/datasets/weedsgalore/weedsgalore-dataset"]

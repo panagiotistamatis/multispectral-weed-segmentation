@@ -1,5 +1,5 @@
 
-# Smoke (1 epoch) για Lawin P=12, R=[6,4,2]. Memory + dim alignment check.
+# Smoke (1 epoch) for Lawin P=12, R=[6,4,2]. Memory + dim alignment check.
 
 
 experiment:
@@ -78,7 +78,7 @@ parameters:
     hor_flip: [True]
     ver_flip: [True]
     channels: [['CIR', 'B', 'RE']]
-    # Δοκιμή batch=4 πρώτα — αν >10GB drop σε 2
+    # Try batch=4 first -- if >10GB drop to 2
     batch_size: [4]
     val_batch_size: [2]
     test_batch_size: [2]
