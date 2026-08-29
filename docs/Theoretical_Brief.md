@@ -253,4 +253,3 @@ Sanity check με paper baseline (Lawin-B0 CIR + Focal+weights): F1 = 0.605 (vs 
 
 ---
 
-*Document version 1.0 — pre-supervisor meeting*

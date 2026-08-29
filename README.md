@@ -101,14 +101,6 @@ Final comparison on the WeedsGalore test set (3-class), input 600×600. SplitLaw
 The largest gains are on the two hard, minority classes — notably the rarest **weed** class
 (+1.44 pp), which the combined Focal-Tversky + Lovász loss was designed to protect.
 
-### Scope & honesty note
-
-All experiments in the thesis were conducted **exclusively on WeedsGalore** (maize, Bavarian
-fields). Generalisation to other crops, regions, or a **cross-dataset** setting was **not** evaluated
-and is explicitly listed as future work in the thesis (§8.2–8.3). No cross-dataset or WeedMap
-numbers are claimed here.
-
----
 
 ## Architecture (overview)
 
@@ -156,22 +148,6 @@ See `params/WeedsGalore/` for every ablation configuration, and
 *(Note: the theoretical brief is an earlier write-up; where any number differs, the thesis PDF is
 authoritative.)*
 
-### Experiment logging (optional)
-
-Training runs can log to [Weights & Biases](https://wandb.ai) — this is **entirely optional**.
-When enabled, the scripts read your key from the `WANDB_API_KEY` environment variable (nothing is
-hardcoded, and the experiment `entity` is left `null` so it defaults to your own account). To run
-**without** any online logging, disable wandb before training:
-
-```bash
-export WANDB_MODE=offline   # keep local run files but never upload
-# or, to turn it off completely:
-wandb disabled              # `wandb enabled` re-enables it later
-```
-
-You can also set `logger: null` in a config's `experiment:` block to skip the tracker entirely.
-
----
 
 ## Repository structure
 
@@ -206,5 +182,4 @@ If you build on this, please also cite the base works:
 Released under the **MIT License** (inherited from the base repository — see `LICENSE`).
 
 Thesis by **Panagiotis Stamatis**, supervised by **Prof. Ioannis Pratikakis** (DUTH), with guidance
-from PhD candidate **A. Papadeas**. Base implementation by **Pasquale De Marinis**
-([@pasqualedem](https://github.com/pasqualedem)).
+from PhD candidate **A. Papadeas**.
