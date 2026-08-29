@@ -143,19 +143,16 @@ python wd.py preprocess --subset WeedsGalore
 python wd.py experiment --file params/WeedsGalore/Best_CIR_B_RE_FT_Lovasz.yaml
 ```
 
-See `params/WeedsGalore/` for every ablation configuration, and
-[`docs/Theoretical_Brief.md`](docs/Theoretical_Brief.md) for the full methodology and reasoning.
-*(Note: the theoretical brief is an earlier write-up; where any number differs, the thesis PDF is
-authoritative.)*
+See `params/WeedsGalore/` for every ablation configuration. The full methodology, derivations, and
+results are in the thesis (linked below).
 
 
 ## Repository structure
 
 ```
 wd/models.py        ASVFInputModule, BottleneckSCSAModule, SplitLawin variants (my modules)
+wd/data/            WeedsGalore data loading & preprocessing
 params/WeedsGalore/ all experiment configs (ablations, seeds)
-docs/               Theoretical brief (methodology write-up)
-results/            metric CSVs
 ezdl/               training framework (submodule; loss work on weedsgalore-losses branch)
 ```
 
@@ -173,7 +170,9 @@ If you build on this, please also cite the base works:
 - Hu et al. **Squeeze-and-Excitation**, 2018 · Woo et al. **CBAM**, 2018 — *attention building blocks used in my ASVF module*
 - Abraham & Khan **Focal Tversky**, 2018 · Berman et al. **Lovász-Softmax**, CVPR 2018 — *losses*
 
-**Thesis (full text):** <!-- [PLACEHOLDER] link to DUTH repository / PDF -->
+**Thesis (full text):** the complete thesis PDF is attached under
+[Releases](https://github.com/panagiotistamatis/multispectral-weed-segmentation/releases/latest)
+(in Greek, with an English abstract).
 
 ---
 
