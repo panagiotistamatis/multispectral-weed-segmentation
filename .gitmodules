@@ -1,0 +1,4 @@
+[submodule "ezdl"]
+	path = ezdl
+	url = https://github.com/panagiotistamatis/ezdl.git
+	branch = weedsgalore-losses
